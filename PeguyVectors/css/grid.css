@@ -1,0 +1,96 @@
+.documentGrid
+{
+	position: absolute;
+	left: 0px;
+	right: 0px;
+	top: 0px;
+	bottom: 0px;
+}
+
+.documentGrid > .leftPanel, .documentGrid > .rightPanel
+{
+	position: absolute;
+	top: 10px;
+	bottom: 10px;
+}
+
+.documentGrid > .leftPanel
+{
+	background: rgb(40, 40, 40);
+	left: 10px;
+	right: calc(50% + 7px);
+	overflow: hidden;
+}
+
+.leftPanel pre
+{
+	left: 10px;
+	right: 10px;
+	top: 10px;
+	bottom: 10px;
+}
+
+.leftPanel pre, 
+.leftPanel code, 
+.documentGrid > .rightPanel > .bottomPanel pre, 
+.documentGrid > .rightPanel > .bottomPanel code
+{
+	padding: 0px;
+	margin: 0px;
+	text-align: left;
+}
+
+.leftPanel code, 
+.documentGrid > .rightPanel > .bottomPanel code
+{
+	background-color: rgb(40, 40, 40);
+	position: absolute;
+	left: 0px;
+	right: 0px;
+	top: 0px;
+	bottom: 0px;
+	overflow: auto;
+}
+
+.documentGrid > .rightPanel > .bottomPanel code
+{
+	left: 10px;
+	right: 10px;
+	top: 10px;
+	bottom: 10px;
+}
+
+.documentGrid > .rightPanel > .bottomPanel code
+{
+	color: rgb(242, 98, 33);
+}
+
+
+.documentGrid > .rightPanel
+{
+	left: calc(50% + 7px);
+	right: 10px;
+}
+
+.documentGrid > .rightPanel > .topPanel, .documentGrid > .rightPanel > .bottomPanel
+{
+	background-color: rgb(40, 40, 40);
+	box-shadow: inset 3px 4px 5px rgba(0, 0, 0, 0.9);
+	position: absolute;
+	left: 0px;
+	right: 0px;
+}
+
+.documentGrid > .rightPanel > .topPanel
+{
+	top: 0px;
+	bottom: 225px;
+	padding: 0px;
+	overflow: hidden;
+}
+
+.documentGrid > .rightPanel > .bottomPanel
+{
+	top: calc(100% - 207px);
+	bottom: 0px;
+}

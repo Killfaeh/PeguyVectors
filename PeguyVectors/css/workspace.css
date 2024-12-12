@@ -1,0 +1,35 @@
+.workspace
+{
+	fill: rgb(40, 40, 40);
+	overflow: hidden;
+}
+
+.workspace .gridLine
+{
+	fill: none;
+	stroke: rgb(128, 128, 128);
+	stroke-width: 2px;
+	stroke-dasharray: 4,5,8,5;
+}
+
+.workspace .background
+{
+	fill: rgb(255, 255, 255);
+	stroke: rgb(0, 0, 0);
+}
+
+.workspace .selectRect1
+{
+	fill: none;
+	stroke: rgb(255, 255, 255);
+	stroke-width: 2px;
+}
+
+.workspace .selectRect
+{
+	fill: none;
+	stroke: rgb(0, 0, 0);
+	stroke-width: 2px;
+	stroke-dasharray: 8,4;
+	stroke-dasharray: 8,8;
+}

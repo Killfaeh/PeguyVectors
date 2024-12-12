@@ -1,0 +1,12 @@
+.buttonsPanel
+{
+	left: 0px;
+	right: 0px;
+	bottom: 0px;
+	text-align: right;
+}
+
+.buttonsPanel .iconsMenu
+{
+	text-align: right;
+}

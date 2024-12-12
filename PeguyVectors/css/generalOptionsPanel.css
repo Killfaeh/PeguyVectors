@@ -1,0 +1,14 @@
+.generalOptionsPanel
+{
+	left: 7px;
+	right: 10px;
+	top: 7px;
+	bottom: 7px;
+	
+	overflow: hidden;
+}
+
+.generalOptionsPanel table th
+{
+	padding: 5px;
+}

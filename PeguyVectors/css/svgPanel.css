@@ -1,0 +1,23 @@
+.svgPanel
+{
+	left: 0px;
+	right: 0px;
+	top: 0px;
+	bottom: 0px;
+	
+	text-align: left;
+}
+
+.svgPanel svg { border: solid rgb(0, 0, 0) 1px; }
+
+/*.svgPanel svg .enlight
+{
+	stroke: rgb(128, 128, 128);
+	stroke-width: 2px;
+}
+
+.svgPanel svg .selected
+{
+	stroke: rgb(255, 0, 0);
+	stroke-width: 2px;
+}*/

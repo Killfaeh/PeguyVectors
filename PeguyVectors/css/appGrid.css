@@ -1,0 +1,45 @@
+.appGrid
+{
+	position: absolute;
+	left: 0px;
+	right: 0px;
+	top: 34px;
+	bottom: 0px;
+}
+
+.appGrid > .leftPanel, .appGrid > .rightPanel
+{
+	position: absolute;
+	top: 0px;
+	bottom: 0px;
+}
+
+.appGrid > .leftPanel
+{
+	left: 0px;
+	right: 414px;
+}
+
+.appGrid > .leftPanel .openAssets
+{
+	position: absolute;
+	right: 0px;
+	top: 2px;
+	padding: 5px;
+	border-radius: 5px 0px 0px 5px;
+	background-color: rgb(40, 40, 40);
+	z-index: 1000;
+}
+
+.appGrid > .leftPanel .openAssets *
+{
+	vertical-align: middle;
+}
+
+.appGrid > .rightPanel
+{
+	left: calc(100% - 400px);
+	right: 10px;
+	top: 10px;
+	bottom: 10px;
+}
