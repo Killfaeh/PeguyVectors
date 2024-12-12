@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		
+		<!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'"> -->
+		<!-- Désactiver les comportements natifs indésirables des mobiles -->
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="viewport" content="width=device-width, minimum-scale=1" />
+		<meta name="viewport" content="width=device-width, maximum-scale=1" />
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name=“viewport” content=”initial-scale=1, viewport-fit=cover”>
+		
+		<title>Peguy Vectors</title>
+		
+		<link type="text/css" rel="stylesheet" media="all" href="js/highlight/styles/atom-one-dark-reasonable.min.css"></link>
+		<script src="js/highlight/highlight.min.js"></script>
+		<script>if (typeof hljs !== 'undefined') { hljs.initHighlightingOnLoad(); }</script>
+
+	</head>
+	
+	<!-- Racine du DOM, la présence de l'id "main" est obligatoire -->
+	<body id="main">
+
+		<!-- Zone d'écran principal de l'application, la présence de l'id "screen" est obligatoire -->
+		<div id="screen">
+			<p>Loading...</p>
+		</div>
+		
+		<!-- Chargement du Loader qui permet d'initialiser le framework ensuite -->
+		<script src='PeguyJS/Loader.js?token=0' ></script>
+		
+		<script>
+
+			var appData;
+			var viewManager;
+			var notifCenter;
+			var progressBar;
+			
+			var updateProgressBar = function($progress)
+			{
+				progressBar.setCurrentValue($progress);
+				//var message = '<p style="text-align: left;" >Progress : ' + $progress + '%</p>';
+				//notifCenter.push(message, false);
+			};
+
+			// Instanciation du Loader
+			var Loader = new Loader('', 'Peguy');
+			
+			Loader.addModules(['math', 'codeEditor']);
+			
+			Loader.addStyle('css/global.css', 'global');
+			
+			//Loader.addScript('js/SVGto3Ddata.js?token=' + Loader.getToken(), 'svgTo3Ddata');
+			Loader.addScript('js/ViewManager.js?token=' + Loader.getToken(), 'viewManager');
+			Loader.addScript('js/VectorUtils.js?token=' + Loader.getToken(), 'vectorUtils');
+			Loader.addScript('js/Vectors/Transform.js?token=' + Loader.getToken(), 'transform');
+			Loader.addScript('js/Vectors/Translation.js?token=' + Loader.getToken(), 'translation');
+			Loader.addScript('js/Vectors/Rotation.js?token=' + Loader.getToken(), 'rotation');
+			Loader.addScript('js/Vectors/Scale.js?token=' + Loader.getToken(), 'scale');
+			Loader.addScript('js/Vectors/SkewX.js?token=' + Loader.getToken(), 'skewX');
+			Loader.addScript('js/Vectors/SkewY.js?token=' + Loader.getToken(), 'skewY');
+			Loader.addScript('js/Vectors/VectorObject.js?token=' + Loader.getToken(), 'vectorObject');
+			Loader.addScript('js/Vectors/Square.js?token=' + Loader.getToken(), 'square');
+			Loader.addScript('js/Vectors/Rect.js?token=' + Loader.getToken(), 'rect');
+			Loader.addScript('js/Vectors/Circle.js?token=' + Loader.getToken(), 'circle');
+			Loader.addScript('js/Vectors/Ellipse.js?token=' + Loader.getToken(), 'ellipse');
+			Loader.addScript('js/Vectors/Line.js?token=' + Loader.getToken(), 'line');
+			Loader.addScript('js/Vectors/Point.js?token=' + Loader.getToken(), 'point');
+			Loader.addScript('js/Vectors/Polyline.js?token=' + Loader.getToken(), 'polyline');
+			Loader.addScript('js/Vectors/Polygon.js?token=' + Loader.getToken(), 'polygon');
+			Loader.addScript('js/Vectors/Path.js?token=' + Loader.getToken(), 'path');
+			Loader.addScript('js/Vectors/Asset.js?token=' + Loader.getToken(), 'asset');
+			Loader.addScript('js/Vectors/Group.js?token=' + Loader.getToken(), 'group');
+			Loader.addScript('js/Doc.js?token=' + Loader.getToken(), 'doc');
+			Loader.addScript('js/Document.js?token=' + Loader.getToken(), 'document');
+			Loader.addScript('js/DocumentSizePopup.js?token=' + Loader.getToken(), 'documentSizePopup');
+			
+			Loader.addComponent('css/appGrid.css', 'js/AppGrid.js', 'appGrid');
+			Loader.addComponent('css/grid.css', 'js/Grid.js', 'grid');
+			Loader.addComponent('css/svgPanel.css', 'js/SVGpanel.js', 'svgPanel');
+			Loader.addComponent('css/workspace.css', 'js/Workspace.js', 'workspace');
+			Loader.addComponent('css/quickCodePanel.css', 'js/QuickCodePanel.js', 'quickCodePanel');
+			//Loader.addComponent('css/objectsTreePanel.css', 'js/ObjectsTreePanel.js', 'objectsTreePanel');
+			Loader.addComponent('css/buttonsPanel.css', 'js/ButtonsPanel.js', 'buttonsPanel');
+			//Loader.addComponent('css/positionConsole.css', 'js/PositionConsole.js', 'positionConsole');
+			Loader.addComponent('css/codePopup.css', 'js/CodePopup.js', 'codePopup');
+			Loader.addComponent('css/helpPopup.css', 'js/HelpPopup.js', 'helpPopup');
+			Loader.addComponent('css/assetManager.css', 'js/AssetManager.js', 'assetManager');
+			Loader.addComponent('css/editAssetPopup.css', 'js/EditAssetPopup.js', 'editAssetPopup');
+			
+			// Redéfinir la fonction this.onload
+			Loader.onload = function()
+			{ 
+				Debug.consoleKey = 'Escape';
+				
+				Debug.onError = function($message, $source, $lineno, $colno, $error)
+				{
+					//cancelSave3D();
+					
+				};
+				
+				viewManager = new ViewManager();
+				viewManager.init();
+				//viewManager.resize();
+				document.getElementById('main').appendChild(viewManager);
+				viewManager.focus();
+				
+				document.getElementById('main').onDrop = function($event) { Events.emit('onDropFiles', [$event]); };
+				
+				notifCenter = new NotificationsManager();
+				document.getElementById('main').appendChild(notifCenter);
+				
+				progressBar = new ProgressBar(0);
+			}; 
+			
+			// On ne lance le chargement du framework que lorsque la page HTML qui héberge l'application a fini de charger
+			window.onload = function()
+			{
+				Loader.load();
+			}; 
+
+			//window.electronAPI.setTitle("POUET ! ");
+
+		</script>
+		
+	</body>
+</html>
+
