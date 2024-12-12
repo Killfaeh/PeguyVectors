@@ -17,6 +17,13 @@ function Document()
     var grid = new Grid();
     component.appendChild(grid);
 
+	var iconsMenuParam = 
+	[
+		{ name: "run-script", iconFile: "icons", iconName: "right-double-arrow-icon", toolTip: "Run script", action: function() { execProgram(); } },
+	];
+
+	var iconsMenu = new IconsMenu(iconsMenuParam, 20);
+
 	//var svgPanel = new SVGpanel();
 	var workspace = new Workspace(this, 800, 600, width, height);
 	
@@ -27,7 +34,8 @@ function Document()
 	var errorConsoleHTML = '<pre><code id="errorConsole" ></code></pre>';
 	var errorConsole = new Component(errorConsoleHTML);
 
-	grid.getById('leftPanel').appendChild(codeEditor);
+	grid.getById('toolsPanel').appendChild(iconsMenu);
+	grid.getById('codePanel').appendChild(codeEditor);
 	//grid.getById('leftPanel').appendChild(svgPanel);
 	grid.getById('topPanel').appendChild(workspace);
 	grid.getById('bottomPanel').appendChild(errorConsole);
@@ -63,13 +71,11 @@ function Document()
 		$this.setSize(Doc.width, Doc.height);
 	};
 
-	var onChange = function($code)
+	var execCode = function($code)
 	{
 		console.log($code);
 
 		var code = $code.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
-
-		$this.setSaved(false);
 
 		var scriptParent = script.parentNode;
 
@@ -80,6 +86,17 @@ function Document()
 
 		script = new Component('<script type="text/javascript" >var scriptToExec = function() { ' + code + '\n};\n try { scriptToExec();\nviewManager.emptyError();\nviewManager.render(); }\ncatch($error) { viewManager.displayError($error); } </script>');
 		document.getElementById('main').appendChild(script);
+	};
+
+	var onChange = function($code)
+	{
+		$this.setSaved(false);
+	};
+
+	var execProgram = function()
+	{
+		var codeToExec = codeEditor.getCode();
+		execCode(codeToExec);
 	};
 
 	this.insertAsset = function($data)

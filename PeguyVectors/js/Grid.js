@@ -5,7 +5,12 @@ function Grid()
 	///////////////
 	
 	var html = '<div class="documentGrid" >'
-				+ '<div id="leftPanel" class="panel leftPanel" ></div>'
+				+ '<div id="leftPanel" class="leftPanel" >'
+					+ '<div id="toolsPanel" class="toolsPanel" >'
+					+ '</div>'
+					+ '<div id="codePanel" class="panel codePanel" >'
+					+ '</div>'
+				+ '</div>'
 				+ '<div id="rightPanel" class="rightPanel" >'
 					+ '<div id="topPanel" class="panel topPanel" >'
 					+ '</div>'
