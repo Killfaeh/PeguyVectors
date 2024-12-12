@@ -16,10 +16,28 @@
 
 .documentGrid > .leftPanel
 {
-	background: rgb(40, 40, 40);
 	left: 10px;
 	right: calc(50% + 7px);
 	overflow: hidden;
+}
+
+.documentGrid .toolsPanel
+{
+	position: absolute;
+	left: 0px;
+	right: 0px;
+	top: -3px;
+	text-align: left;
+}
+
+.documentGrid .codePanel
+{
+	background: rgb(40, 40, 40);
+	position: absolute;
+	left: 0px;
+	right: 0px;
+	top: 30px;
+	bottom: 0px;
 }
 
 .leftPanel pre
