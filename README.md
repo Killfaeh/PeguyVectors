@@ -70,4 +70,8 @@ Run PeguyVectors in a terminal.
 
 ## How to use
 
-Blablabla
+### Basics
+
+### Insert assets
+
+### Built-in documentation
