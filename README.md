@@ -1,5 +1,10 @@
 # Péguy Vectors
-Péguy Vectors is a vector procedural generation software.
+Péguy Vectors is a vector procedural generation software based on [Electron](https://www.electronjs.org/) and [Péguy.js](https://github.com/Killfaeh/Peguy.js).
+
+## Table of Contents
+
+1. [Installation](#installation)
+2. [How to use](#how-to-use)
 
 ## Installation
 
@@ -51,17 +56,17 @@ Archive content
 
 **Windows**
 
-If you run Péguy Editor for the first time, run install.bat (double clic).</br>
-Then, run PeguyEditor.bat (double clic).
+If you run Péguy Vectors for the first time, run install.bat (double clic).</br>
+Then, run PeguyVectors.bat (double clic).
 
 **Mac OS**
 
-Run PeguyEditor.app (double clic).</br>
-You can put PeguyEditor.app in your dock.
+Run PeguyVectors.app (double clic).</br>
+You can put PeguyVectors.app in your dock.
 
 **Linux**
 
-Run PeguyEditor in a terminal.
+Run PeguyVectors in a terminal.
 
 ## How to use
 
