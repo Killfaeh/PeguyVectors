@@ -78,9 +78,17 @@ Run PeguyVectors in a terminal.
 
 ### Basics
 
+Here is how look the interface.</br>
+
 <div align="center">
 <img src="./doc/01-general.png">
 </div></br>
+
+A Péguy Vectors project is a simple javascript file. </br>
+To test your program, you just need to click on the left top double arrow.</br>
+You can export the result in SVG or PNG format file.</br>
+The quick code panel at right help you to write your code faster. 
+Double click on the label or simple click on the copy/paste icon of the row which interests you and a code block will be pasted in your code.
 
 ### Insert assets
 
@@ -88,7 +96,14 @@ Run PeguyVectors in a terminal.
 <img src="./doc/02-assets.png">
 </div></br>
 
+You can save assets in your asset library by drag and drop SVG files into it.</br>
+Then, you can call these assets in your code. 
+To do so, select the asset that interests you in the asset library et click on the Ok button. 
+The code line which call the asset is pasted in your code.
+
 ### Built-in documentation
+
+A documentation is available inside Péguy Vectors. You can read it by clicking on the Help menu.</br>
 
 <div align="center">
 <img src="./doc/03-help.png">
