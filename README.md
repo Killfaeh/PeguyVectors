@@ -10,7 +10,7 @@ Péguy Vectors is a vector procedural generation software based on [Electron](ht
 
 ### Install Node.js
 
-You need to install Node.js to run Péguy Editor.
+You need to install Node.js to run Péguy Vectors.
 
 **Windows**
 
