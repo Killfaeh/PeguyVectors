@@ -56,12 +56,12 @@ Archive content
 
 **Windows**
 
-If you run Péguy Vectors for the first time, run install.bat (double clic).</br>
-Then, run PeguyVectors.bat (double clic).
+If you run Péguy Vectors for the first time, run install.bat (double click).</br>
+Then, run PeguyVectors.bat (double click).
 
 **Mac OS**
 
-Run PeguyVectors.app (double clic).</br>
+Run PeguyVectors.app (double click).</br>
 You can put PeguyVectors.app in your dock.
 
 **Linux**
