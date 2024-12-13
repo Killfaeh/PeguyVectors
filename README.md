@@ -1,6 +1,8 @@
 # Péguy Vectors
 Péguy Vectors is a vector procedural generation software based on [Electron](https://www.electronjs.org/) and [Péguy.js](https://github.com/Killfaeh/Peguy.js).</br>
 
+Here is an example of what you can do with Péguy Vectors.</br>
+
 <div align="center">
 <img src="./demos/screenshot.png">
 </div></br>
