@@ -376,20 +376,26 @@ function CodeEditor($language)
     {
         if (utils.isset(hljs) && ((!utils.isset(selection)) || (selection.startOffset === selection.endOffset && selection.startContainer === selection.endContainer)))
         {
-			component.getById('editor').setAttribute('class', 'editor ' + language);
-            $this.saveCaretPosition();
-			//component.getById('editor').appendChild(document.createTextNode('\n'));
-			component.getById('editor').removeAttribute('data-highlighted');
-            hljs.highlightElement(component.getById('editor'));
+			if (language !== 'plaintext' && language !== 'xml' && language !== 'html')
+			{
+				component.getById('editor').setAttribute('class', 'editor ' + language);
+				$this.saveCaretPosition();
+				//component.getById('editor').appendChild(document.createTextNode('\n'));
+				component.getById('editor').removeAttribute('data-highlighted');
+				hljs.highlightElement(component.getById('editor'));
 
-			var lastNode = component.getById('editor').lastChild;
+				var lastNode = component.getById('editor').lastChild;
 
-			if (utils.isset(lastNode) && lastNode.nodeType !== Node.TEXT_NODE)
-				lastNode.appendChild(document.createTextNode('\n'));
+				if (utils.isset(lastNode) && lastNode.nodeType !== Node.TEXT_NODE)
+					lastNode.appendChild(document.createTextNode('\n'));
 
-            $this.restoreCaret(true);
-			//$this.updateNumLines();
-			//$this.updateNumLinesScroll();
+				$this.restoreCaret(true);				
+			}
+			else
+			{
+				$this.updateNumLines();
+				$this.updateNumLinesScroll();
+			}
         }
     };
 	

@@ -793,6 +793,7 @@ function Loader($root, $style)
 		components['frame'] = new ComponentLoader('frame', root + 'PeguyJS/Graphics/Components/classic/Frame.js', root + 'PeguyJS/Graphics/Style/' + style + '/classic/frame.css');
 		components['invisibleFreezeScreen'] = new ComponentLoader('frame', root + 'PeguyJS/Graphics/Components/classic/InvisibleFreezeScreen.js', root + 'PeguyJS/Graphics/Style/' + style + '/classic/invisibleFreezeScreen.css');
 		components['dock'] = new ComponentLoader('dock', root + 'PeguyJS/Graphics/Components/' + mode + '/Dock.js', root + 'PeguyJS/Graphics/Style/' + style + '/' + mode + '/dock.css');
+		components['testCodePanel'] = new ComponentLoader('testCodePanel', root + 'PeguyJS/Graphics/Components/' + mode + '/TestCodePanel.js', root + 'PeguyJS/Graphics/Style/' + style + '/' + mode + '/testCodePanel.css');
 	}
 	
 	//////////////
@@ -1103,6 +1104,23 @@ function Loader($root, $style)
 			scripts[$name].hasLoaded();
 		else if (components[$name] !== null && components[$name] !== undefined)
 			components[$name].hasLoaded();
+	};
+
+	// Pour charger après coup une nouvelle image
+	this.useImg = function($url, $name, $onLoad)
+	{
+		if (images[$name] === null || images[$name] === undefined)
+			images[$name] = new ImgLoader($url, $name);
+		
+		images[$name].onload = $onLoad;
+		images[$name].load();
+	};
+	
+	// Pour ajouter une image après coup sans lancer le chargement immédiatement
+	this.addImg = function($url, $name)
+	{
+		if (images[$name] === null || images[$name] === undefined)
+			images[$name] = new ImgLoader($url, $name);
 	};
 	
 	// Pour charger après coup un nouveau fichier SVG
