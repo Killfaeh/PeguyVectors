@@ -62,17 +62,19 @@ Archive content
 
 **Windows**
 
-If you run Péguy Vectors for the first time, run install.bat (double click). 
+If you run Péguy Vectors for the first time, run install.bat as administrator. 
 A DOS console appears, with a small rotating bar in the top left corner, then disappears when installation is complete.</br>
-Then, run PeguyVectors.bat (double click).
+Then, run PeguyVectors.bat as administrator.
 
 **Mac OS**
 
-Run PeguyVectors.app (double click).</br>
+If you run Péguy Vectors for the first time, run Install.app (double clic). 
+Run PeguyVectors.app (double clic).</br>
 You can put PeguyVectors.app in your dock.
 
 **Linux**
 
+If you run Péguy Vectors for the first time, run Install in a console. 
 Run PeguyVectors in a console.
 
 ## How to use
