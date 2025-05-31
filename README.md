@@ -68,13 +68,13 @@ Then, run PeguyVectors.bat as administrator.
 
 **Mac OS**
 
-If you run Péguy Vectors for the first time, run Install.app (double clic). 
+If you run Péguy Vectors for the first time, run Install.app (double clic). </br>
 Run PeguyVectors.app (double clic).</br>
 You can put PeguyVectors.app in your dock.
 
 **Linux**
 
-If you run Péguy Vectors for the first time, run Install in a console. 
+If you run Péguy Vectors for the first time, run Install in a console. </br>
 Run PeguyVectors in a console.
 
 ## How to use
