@@ -55,6 +55,11 @@ function VectorObject()
 
     this.clone = function() {};
 
+    this.borderToPath = function($width)
+    {
+        return new Path([]);
+    };
+
     this.cloneToPoints = function($pointsList, $alignToTangent)
     {
         var clonesList = [];
@@ -101,12 +106,24 @@ function VectorObject()
 
     this.samplePoints = function($n)
     {
+        if (!utils.isset($n))
+            $n = 32;
+
+        if ($n < 2)
+            $n = 2;
+
         var svgObject = $this.render();
         return svgObject.samplePoints($n);
     };
 
     this.samplePointsWithProperties = function($n)
     {
+        if (!utils.isset($n))
+            $n = 32;
+        
+        if ($n < 2)
+            $n = 2;
+        
         var svgObject = $this.render();
         return svgObject.samplePointsForWebGL($n);
     };

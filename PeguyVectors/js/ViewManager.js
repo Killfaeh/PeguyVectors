@@ -345,6 +345,15 @@ function ViewManager()
 		}
 	};
 
+	this.updatePlugIns = function($plugIns)
+	{
+		for (var i = 0; i < $plugIns.plugIns.length; i++)
+		{
+			var script = utils.create("script", { "type": "text/javascript", "src": $plugIns.plugIns[i] });
+			document.getElementById('main').appendChild(script);
+		}
+	};
+
 	this.updateAssetManager = function($assets) { assetLibrary.loadAssetList($assets); };
 
 	this.displayError = function($error)

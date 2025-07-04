@@ -118,6 +118,43 @@ function Document()
 		codeEditor.insertCode('\n\r' + $code.replaceAll('&amp;', '&').replaceAll('&lt;', '<').replaceAll('&gt;', '>') + '\n\r');
 	};
 
+	var pasteCode = function($code)
+	{
+		var code = $code;
+
+		if (/^<\?xml/.test($code) || /<\/[a-zA-Z]+>/.test($code) || /<[^<]+\/>/.test($code))
+		{
+			console.log("Traitement SVG");
+
+			var code = '';
+
+			$code = $code.replaceAll('\n', '').replaceAll('\r', '').replaceAll('\t', '');
+			$code = $code.replace(/^<\?xml[^<]*>/, '');
+			$code = $code.replace(/^<!DOCTYPE[^<]*>/, '');
+
+			if (!/^<svg/.test($code))
+				$code = '<svg viewBox="0 0 1000 1000" >' + $code + '</svg>';
+
+			console.log($code);
+
+			var b64Code = btoa($code);
+
+			var flatSVG = VectorUtils.flatSVGtree(b64Code);
+
+			for (var i = 0; i < flatSVG.length; i++)
+			{
+				var svgNode = new Component(flatSVG[i].code);
+				var subCode = VectorUtils.svgNodeToCode(svgNode);
+				subCode = subCode.replaceAll('wire', 'wire' + i);
+				code = code + subCode + '\n\r';
+			}
+
+			console.log(code);
+		}
+
+		return code;
+	};
+
 	this.restoreScroll = function() { codeEditor.restoreScroll(); };
 
 	this.displayError = function($error)
@@ -202,6 +239,7 @@ function Document()
 		initDisplay = true;
 	};
 	
+	codeEditor.onPaste = function($code) { return pasteCode($code); };
 	codeEditor.onChange = function($code) { onChange($code); };
 
 	////////////////

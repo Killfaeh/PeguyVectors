@@ -9,43 +9,38 @@ function Polygon($points)
     if (!utils.isset(points))
         points = [];
 
-	var vectorObject = new VectorObject();
+	var vectorObject = new Path([]);
 
 	//////////////
 	// Méthodes //
 	//////////////
 
-	this.render = function()
+    var updatePath = function()
     {
-        var pointsSTR = '';
+        vectorObject.setOperations([]);
 
-        if (points.length > 0)
+        for (var i = 0; i < points.length; i++)
         {
-            pointsSTR = 'M ' + points[0][0] + ',' + points[0][1];
-
-            for (var i = 1; i < points.length; i++)
-                pointsSTR = pointsSTR + ' L' + points[i][0] + ',' + points[i][1];
-            
-            pointsSTR = pointsSTR + ' Z';
+            if (i === 0)
+                vectorObject.moveTo([points[i][0], points[i][1]]);
+            else 
+                vectorObject.lineTo([points[i][0], points[i][1]]);
         }
 
-        var objectCode = '<path d="' + pointsSTR + '" />';
-
-        var svgObject = new Component(objectCode);
-
-        $this['super'].render(svgObject);
-
-        return svgObject;
+        vectorObject.close();
     };
 
-    this.pathCode = function()
+    this.render = function render()
     {
-        return '';
+        updatePath();
+        var svgObject = $this.execSuper('render', [], render);
+        return svgObject;
     };
 
     this.addPoint = function($x, $y)
     {
         points.push([$x, $y]);
+        updatePath();
     };
 
     this.clone = function($cloneTransform)
@@ -73,6 +68,7 @@ function Polygon($points)
     this.setPoints = function($points)
     {
         points = $points;
+        updatePath();
     };
 
     this.points = function($points) { $this.setPoints($points); };
@@ -82,6 +78,7 @@ function Polygon($points)
 	//////////////
 	
 	var $this = utils.extend(vectorObject, this);
+    updatePath();
 	return $this; 
 }
 

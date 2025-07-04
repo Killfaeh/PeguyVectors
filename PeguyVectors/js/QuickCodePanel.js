@@ -132,22 +132,28 @@ function QuickCodePanel()
 		},
 
 		{ 
+			label: 'Create regular polygon',
+			keywords: '2d, polygon, regular',
+			code: 'var polygon = new RegularPolygon(100, 6);\n'
+		},
+
+		{ 
 			label: 'Create path with operations list',
 			keywords: '2d, path',
-			code: "var path = new Path([['M', -250, -250], ['L', 250, -250], ['L', 0, 250], ['Z']];);\n"
+			code: "var path = new Path([['M', [-250, -250]], ['L', [250, -250]], ['L', [0, 250]], ['Z']]);\n"
 		},
 
 		{ 
 			label: 'Create path with functions',
 			keywords: '2d, path',
 			code: 'var path = new Path([]);\n'
-					+ 'path.moveTo($x, $y);\n'
-					+ 'path.lineTo($x, $y);\n'
-					+ 'path.arc($rx, $ry, $rotation, $largeArcFlag, $sweepFlag, $endX, $endY);\n'
-					+ 'path.bezierQ($hx, $hy, $endX, $endY);\n'
-					+ 'path.bezierQT($hx, $hy, $endX, $endY, $htx, $hty);\n'
-					+ 'path.bezierC($h1x, $h1y, $h2x, $h2y, $endX, $endY);\n'
-					+ 'path.bezierCS($h1x, $h1y, $h2x, $h2y, $endX, $endY, $hs1x, $hs1y, $hs2x, $hs2y);\n'
+					+ 'path.moveTo([$x, $y]);\n'
+					+ 'path.lineTo([$x, $y]);\n'
+					+ 'path.arc([$rx, $ry], $rotation, $largeArcFlag, $sweepFlag, [$endX, $endY]);\n'
+					+ 'path.bezierQ([$hx, $hy], [$endX, $endY]);\n'
+					+ 'path.bezierQT([$hx, $hy], [$endX, $endY], [$htx, $hty]);\n'
+					+ 'path.bezierC([$h1x, $h1y], [$h2x, $h2y], [$endX, $endY]);\n'
+					+ 'path.bezierCS([$h1x, $h1y], [$h2x, $h2y], [$endX, $endY], [$hs1x, $hs1y], [$hs2x, $hs2y]);\n'
 					+ 'path.close();\n'
 		},
 

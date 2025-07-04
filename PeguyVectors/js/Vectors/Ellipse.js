@@ -13,27 +13,26 @@ function Ellipse($rX, $rY)
     if (!utils.isset(rY))
         rY = 50;
 
-	var vectorObject = new VectorObject();
+	var vectorObject = new Path([]);
 
 	//////////////
 	// Méthodes //
 	//////////////
 
-	this.render = function()
+    var updatePath = function()
     {
-        //var objectCode = '<ellipse cx="0" cy="0" rx="' + rX + '" ry="' + rY + '" />';
-        var objectCode = '<path d="M -' + rX + ' 0 A ' + rX + ' ' + rY + ' 0 0 0 ' + rX + ' 0 A ' + rX + ' ' + rY + ' 0 0 0 -' + rX + ' 0 Z" />';
-
-        var svgObject = new Component(objectCode);
-
-        $this['super'].render(svgObject);
-
-        return svgObject;
+		vectorObject.setOperations([]);
+		vectorObject.moveTo([-rX, 0.0]);
+		vectorObject.arc([rX, rY], 0, 0, 0, [rX, 0]);
+		vectorObject.arc([rX, rY], 0, 0, 0, [-rX, 0]);
+		vectorObject.close();
     };
 
-    this.pathCode = function()
+	this.render = function render()
     {
-        return '';
+        updatePath();
+        var svgObject = $this.execSuper('render', [], render);
+        return svgObject;
     };
 
     this.clone = function($cloneTransform)
@@ -69,6 +68,8 @@ function Ellipse($rX, $rY)
         
         if (!utils.isset(rY))
             rY = 50;
+
+        updatePath();
     };
 
     this.radius = function($rX, $rY) { $this.setRadius($rX, $rY); };
@@ -78,6 +79,7 @@ function Ellipse($rX, $rY)
 	//////////////
 	
 	var $this = utils.extend(vectorObject, this);
+    updatePath();
 	return $this; 
 }
 

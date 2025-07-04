@@ -11,27 +11,28 @@ function Square($size)
 
     var round = 0;
 
-	var vectorObject = new VectorObject();
+	var vectorObject = new Path([]);
 
 	//////////////
 	// Méthodes //
 	//////////////
 
-	this.render = function()
+    var updatePath = function()
     {
-        //var objectCode = '<rect x="' + -size/2 + '" y="' + -size/2 + '" width="' + size + '" height="' + size + '" rx="' + round + '" ry="' + round + '" />';
-        var objectCode = '<path d="M -' + (size/2) + ' -' + (size/2) + ' L ' + (size/2) + ' -' + (size/2) + ' L ' + (size/2) + ' ' + (size/2) + ' L -' + (size/2) + ' ' + (size/2)+ ' L -' + (size/2) + ' -' + (size/2) + ' Z" />';
-
-        var svgObject = new Component(objectCode);
-
-        $this['super'].render(svgObject);
-
-        return svgObject;
+        // Faudra ajouter les coins arrondis ! 
+        vectorObject.setOperations([]);
+        vectorObject.moveTo([-size/2, -size/2]);
+        vectorObject.lineTo([size/2, -size/2]);
+        vectorObject.lineTo([size/2, size/2]);
+        vectorObject.lineTo([-size/2, size/2]);
+        vectorObject.close();
     };
 
-    this.pathCode = function()
+	this.render = function render()
     {
-        return '';
+        updatePath();
+        var svgObject = $this.execSuper('render', [], render);
+        return svgObject;
     };
 
 	////////////////
@@ -51,6 +52,8 @@ function Square($size)
 
         if (!utils.isset(size))
             size = 100;
+
+        updatePath();
     };
 
     this.size = function($size) { $this.setSize($size); };
@@ -58,6 +61,7 @@ function Square($size)
     this.setRound = function($round)
     {
         round = $round;
+        updatePath();
     };
 
     this.round = function($round) { $this.setRound($round); };
@@ -80,6 +84,7 @@ function Square($size)
 	//////////////
 	
 	var $this = utils.extend(vectorObject, this);
+    updatePath();
 	return $this; 
 }
 

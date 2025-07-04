@@ -156,7 +156,7 @@ var VectorUtils =
 							var lineToVertex = [parseFloat(lineToVertexArray[0]), parseFloat(lineToVertexArray[1]), 1.0, 0.0];
 							newLineToVertex = transformMatrix.multiplyVect(lineToVertex);
 
-							newD = newD + ' M ' + newLineToVertex[0] + ',' + newLineToVertex[1];
+							newD = newD + ' L ' + newLineToVertex[0] + ',' + newLineToVertex[1];
 						}
 						else if (type === 'H')
 						{
@@ -293,6 +293,207 @@ var VectorUtils =
 		}
 
 		return nodesList;
+	},
+
+	flatSVGtree: function($b64svgData)
+	{
+		VectorUtils.countID = 0;
+		var nodesList = [];
+
+		var base64Data = $b64svgData.replace('data:image/svg+xml;base64,', '');
+		var decodedData = atob(base64Data);
+		var originalSVGdata = decodedData.replace(/<\?xml [^<]*>/, '').replace(/<!DOCTYPE [^<]*>/, '');
+		var originalSVGDOM = new Component(originalSVGdata);
+
+		var transformMatrix = new Matrix(); 
+		transformMatrix.identity();
+
+		console.log(originalSVGDOM);
+		var childrenList = originalSVGDOM.childNodes;
+
+		for (var i = 0; i < childrenList.length; i++)
+		{
+			var childNodeList = VectorUtils.computeSVGnode(childrenList[i], transformMatrix);
+
+			for (var j = 0; j < childNodeList.length; j++)
+				nodesList.push(childNodeList[j]);
+		}
+
+		return nodesList;
+	},
+
+	svgNodeToCode: function($svgNode)
+	{
+		var code = '';
+
+		if ($svgNode.tagName === 'rect')
+		{
+			var x = parseFloat($svgNode.getAttributeNS(null, 'x').replaceAll(' ', ''));
+			var y = parseFloat($svgNode.getAttributeNS(null, 'y').replaceAll(' ', ''));
+			var width = parseFloat($svgNode.getAttributeNS(null, 'width').replaceAll(' ', ''));
+			var height = parseFloat($svgNode.getAttributeNS(null, 'height').replaceAll(' ', ''));
+					
+			code = 'var wire = new Path([]);\n\r';
+			code = code + 'wire.moveTo([' + x + ', ' + y + ']);\n\r';
+			code = code + 'wire.lineTo([' + (x+width) + ', ' + y + ']);\n\r';
+			code = code + 'wire.lineTo([' + (x+width) + ', ' + (y+height) + ']);\n\r';
+			code = code + 'wire.lineTo([' + x + ', ' + (y+height) + ']);\n\r';
+			code = code + 'wire.close();\n\r';
+		}
+
+		else if ($svgNode.tagName === 'circle')
+		{
+			var cx = parseFloat($svgNode.getAttributeNS(null, 'cx').replaceAll(' ', ''));
+			var cy = parseFloat($svgNode.getAttributeNS(null, 'cy').replaceAll(' ', ''));
+			var r = parseFloat($svgNode.getAttributeNS(null, 'r').replaceAll(' ', ''));
+			
+			code = 'var wire = new Path([]);\n\r';
+			code = code + 'wire.moveTo([' + (cx+r) + ', ' + cy + ']);\n\r';
+			code = code + 'wire.arc([' + r + ', ' + r + '], 0, 0, 0, [' + cx + ', ' + (cy+r) + ']);\n\r';
+			code = code + 'wire.arc([' + r + ', ' + r + '], 0, 0, 0, [' + (cx-r) + ', ' + cy + ']);\n\r';
+			code = code + 'wire.arc([' + r + ', ' + r + '], 0, 0, 0, [' + cx + ', ' + (cy-r) + ']);\n\r';
+			code = code + 'wire.arc([' + r + ', ' + r + '], 0, 0, 0, [' + (cx+r) + ', ' + cy + ']);\n\r';
+			code = code + 'wire.close();\n\r';
+		}
+
+		else if ($svgNode.tagName === 'ellipse')
+		{
+			var cx = parseFloat($svgNode.getAttributeNS(null, 'cx').replaceAll(' ', ''));
+			var cy = parseFloat($svgNode.getAttributeNS(null, 'cy').replaceAll(' ', ''));
+			var rx = parseFloat($svgNode.getAttributeNS(null, 'rx').replaceAll(' ', ''));
+			var ry = parseFloat($svgNode.getAttributeNS(null, 'ry').replaceAll(' ', ''));
+				
+			code = 'var wire = new Path([]);\n\r';
+			code = code + 'wire.moveTo([' + (cx+r) + ', ' + cy + ']);\n\r';
+			code = code + 'wire.arc([' + rx + ', ' + ry + '], 0, 0, 0, [' + cx + ', ' + (cy+ry) + ']);\n\r';
+			code = code + 'wire.arc([' + rx + ', ' + ry + '], 0, 0, 0, [' + (cx-rx) + ', ' + cy + ']);\n\r';
+			code = code + 'wire.arc([' + rx + ', ' + ry + '], 0, 0, 0, [' + cx + ', ' + (cy-ry) + ']);\n\r';
+			code = code + 'wire.arc([' + rx + ', ' + ry + '], 0, 0, 0, [' + (cx+rx) + ', ' + cy + ']);\n\r';
+			code = code + 'wire.close();\n\r';
+		}
+		else if ($svgNode.tagName === 'line')
+		{
+			var x1 = parseFloat($svgNode.getAttributeNS(null, 'x1').replaceAll(' ', ''));
+			var y1 = parseFloat($svgNode.getAttributeNS(null, 'y1').replaceAll(' ', ''));
+			var x2 = parseFloat($svgNode.getAttributeNS(null, 'x2').replaceAll(' ', ''));
+			var y2 = parseFloat($svgNode.getAttributeNS(null, 'y2').replaceAll(' ', ''));
+				
+			code = 'var wire = new Path([]);\n\r';
+			code = code + 'wire.moveTo([' + x1 + ', ' + y1 + ']);\n\r';
+			code = code + 'wire.lineTo([' + x2 + ', ' + y2 + ']);\n\r';
+		}
+		else if ($svgNode.tagName === 'polyline' || $svgNode.tagName === 'polygon')
+		{
+			var points = $svgNode.getAttributeNS(null, 'points').replace(/^ */, '');
+
+			code = 'var wire = new Path([]);\n\r';
+				
+			if (utils.isset(points.split))
+			{
+				var pointsArray = points.split(' ');
+
+				for (var i = 0; i < pointsArray.length; i++)
+				{
+					var vertex = pointsArray[i].split(',');
+
+					if (i === 0)
+						code = code + 'wire.moveTo([' + vertex[0] + ', ' + vertex[1] + ']);\n\r';
+					else
+						code = code + 'wire.lineTo([' + vertex[0] + ', ' + vertex[1] + ']);\n\r';
+				}
+			}
+
+			if ($svgNode.tagName === 'polygon')
+				code = code + 'wire.close();\n\r';
+		}
+		else if ($svgNode.tagName === 'path')
+		{
+			var d = $svgNode.getAttributeNS(null, 'd').replace(/^ */, '');
+
+			code = 'var wire = new Path([]);\n\r';
+				
+			if (utils.isset(d.replace))
+			{
+				var dWidthSeparator = d.replace(/([a-zA-Z])/gi, ';$1').replace(/^;/, '');
+				console.log(dWidthSeparator);
+				var dArray = dWidthSeparator.split(';');
+				console.log(dArray);
+
+				for (var i = 0; i < dArray.length; i++)
+				{
+					var type = dArray[i][0];
+					var commandArray = dArray[i].replace(/^[a-zA-Z] */, '').split(' ');
+
+					if (type === 'M')
+					{
+						var moveToVertexArray = commandArray[0].split(',');
+						code = code + 'wire.moveTo([' + moveToVertexArray[0] + ', ' + moveToVertexArray[1] + ']);\n\r';
+					}
+					else if (type === 'L')
+					{
+						var lineToVertexArray = commandArray[0].split(',');
+						code = code + 'wire.lineTo([' + lineToVertexArray[0] + ', ' + lineToVertexArray[1] + ']);\n\r';
+					}
+					else if (type === 'H')
+					{
+						var lineToVertexHArray = commandArray[0].split(',');
+						code = code + 'wire.lineTo([' + lineToVertexHArray[0] + ', ' + lineToVertexHArray[1] + ']);\n\r';
+					}
+					else if (type === 'V')
+					{
+						var lineToVertexVArray = commandArray[0].split(',');
+						code = code + 'wire.lineTo([' + lineToVertexVArray[0] + ', ' + lineToVertexVArray[1] + ']);\n\r';
+					}
+					else if (type === 'A')
+					{
+						var rx = parseFloat(commandArray[0]);
+						var ry = parseFloat(commandArray[1]);
+						var param1 = parseFloat(commandArray[2]);
+						var param2 = parseFloat(commandArray[3]);
+						var param3 = parseFloat(commandArray[4]);
+						var endVertexArray = commandArray[5].split(',');
+
+						code = code + 'wire.arc([' + rx + ', ' + ry + '], ' + param1 + ', ' + param2 + ', ' + param3 + ', [' + endVertexArray[0] + ', ' + endVertexArray[1] + ']);\n\r';
+					}
+					else if (type === 'Q')
+					{
+						var vertex1Array = commandArray[0].split(',');
+						var vertex2Array = commandArray[1].split(',');
+
+						if (utils.isset(dArray[i+1]) && dArray[i+1][0] === 'T')
+						{
+							var commandArray2 = dArray[i+1].replace(/^[a-zA-Z]/, '').split(' ');
+							var vertex3Array = commandArray2[0].split(',');
+
+							code = code + 'wire.bezierQT([' + vertex1Array[0] + ', ' + vertex1Array[1] + '], [' + vertex2Array[0] + ', ' + vertex2Array[1] + '], [' + vertex3Array[0] + ', ' + vertex3Array[1] + ']);\n\r';
+						}
+						else
+							code = code + 'wire.bezierQ([' + vertex1Array[0] + ', ' + vertex1Array[1] + '], [' + vertex2Array[0] + ', ' + vertex2Array[1] + ']);\n\r';
+					}
+					else if (type === 'C')
+					{
+						var vertex1Array = commandArray[0].split(',');
+						var vertex2Array = commandArray[1].split(',');
+						var vertex3Array = commandArray[2].split(',');
+
+						if (utils.isset(dArray[i+1]) && dArray[i+1][0] === 'S')
+						{
+							var commandArray2 = dArray[i+1].replace(/^[a-zA-Z]/, '').split(' ');
+							var vertex4Array = commandArray2[0].split(',');
+							var vertex5Array = commandArray2[1].split(',');
+
+							code = code + 'wire.bezierCS([' + vertex1Array[0] + ', ' + vertex1Array[1] + '], [' + vertex2Array[0] + ', ' + vertex2Array[1] + '], [' + vertex3Array[0] + ', ' + vertex3Array[1] + '], [' + vertex4Array[0] + ', ' + vertex4Array[1] + '], [' + vertex5Array[0] + ', ' + vertex5Array[1] + ']);\n\r';
+						}
+						else
+							code = code + 'wire.bezierC([' + vertex1Array[0] + ', ' + vertex1Array[1] + '], [' + vertex2Array[0] + ', ' + vertex2Array[1] + '], [' + vertex3Array[0] + ', ' + vertex3Array[1] + ']);\n\r';
+					}
+					else if (type === 'Z')
+						code = code + 'wire.close();\n\r';
+				}
+			}
+		}
+
+		return code;
 	}
 };
 

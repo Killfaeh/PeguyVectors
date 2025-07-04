@@ -18,14 +18,16 @@ function Line($x1, $y1, $x2, $y2)
 	// Méthodes //
 	//////////////
 
-	this.render = function()
+	this.render = function render()
     {
         //var objectCode = '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" />';
         var objectCode = '<path d="M ' + x1 + ' ' + y1 + ' L ' + x2 + ' ' + y2 + '" />';
 
         var svgObject = new Component(objectCode);
 
-        $this['super'].render(svgObject);
+        //$this['super'].render(svgObject);
+
+        $this.execSuper('render', [svgObject], render);
 
         return svgObject;
     };
@@ -46,6 +48,45 @@ function Line($x1, $y1, $x2, $y2)
         clone.border($this.getBorderColor(), $this.getBorderWidth());
 		return clone;
 	};
+
+    this.borderToPath = function($width)
+    {
+        return new Path([]);
+    };
+
+    this.samplePoints = function($n)
+    {
+        var svgObject = $this.render();
+
+        if (!utils.isset($n) || $n < 2)
+        {
+            var pointsList = [];
+            pointsList.push(svgObject.pointAtLength(0.0));
+            pointsList.push(svgObject.pointAtLength(1.0));
+            return pointsList;
+        }
+        else
+            return svgObject.samplePoints($n);
+    };
+
+    this.samplePointsWithProperties = function($n)
+    {
+        var svgObject = $this.render();
+
+        if (!utils.isset($n) || $n < 2)
+        {
+            var pointsList = [];
+            var vertex1 = svgObject.pointAtLength(0.0);
+            var vertex2 = svgObject.pointAtLength(1.0);
+            var tangent = (new Vector([vertex2[0]-vertex1[0], vertex2[1]-vertex1[1]])).normalize();
+            var normal = [tangent.values()[1], -tangent.values()[0]];
+            pointsList.push({point: vertex1, tangent: tangent, normal: normal, smooth: false});
+            pointsList.push({point: vertex2, tangent: tangent, normal: normal, smooth: false});
+            return pointsList;
+        }
+        else
+            return svgObject.samplePointsForWebGL($n);
+    };
 
 	////////////////
 	// Accesseurs //

@@ -87,7 +87,7 @@ var Points =
         {
             var r = patternRadius*Math.sqrt((i+0.5)/nbDots);
             var theta = Math.PI*goldenNb*(i+0.5);
-            var point = Math.toCartesian(r, theta);
+            var point = Trigo.cartesian(r, theta);
             pointsList.push([point.x + Math.random()*2.0*random - random, point.y + Math.random()*2.0*random - random]);
         }
 
@@ -226,8 +226,8 @@ function InflectionPoint($x, $y, $theta, $dist1, $dist2)
     this.getHandles = function()
     {
         var radTheta = theta/180.0*Math.PI;
-        var handle1 = Math.toCartesian(dist1, radTheta+Math.PI, 0.0);
-        var handle2 = Math.toCartesian(dist2, radTheta, 0.0);
+        var handle1 = Trigo.cartesian(dist1, radTheta+Math.PI, 0.0);
+        var handle2 = Trigo.cartesian(dist2, radTheta, 0.0);
         return [[handle1.x + point.getX(), handle1.y + point.getY()], [handle2.x + point.getX(), handle2.y + point.getY()]]
     };
 

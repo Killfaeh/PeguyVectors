@@ -19,6 +19,7 @@ const userHomeDir = os.homedir();
 var isNotSavedFiles = false;
 var recentFiles = { recentFiles: [] };
 var assets = { assets: [] };
+var plugIns = [];
 
 ///////////////
 // Fonctions //
@@ -53,7 +54,33 @@ function handleSetNotSavedFiles($event, $isNotSavedFiles)
 async function handleLoadSettingsInGUI()
 {
 	mainWindow.webContents.executeJavaScript("viewManager.updateRecentFiles(" + JSON.stringify(recentFiles) + ");");
+	mainWindow.webContents.executeJavaScript("viewManager.updatePlugIns(" + JSON.stringify({ plugIns: plugIns }) + ");");
 	mainWindow.webContents.executeJavaScript("viewManager.updateAssetManager(" + JSON.stringify(assets) + ");");
+}
+
+async function loadPlugIns()
+{
+	var files = fs.readdirSync('PlugIns');
+
+	for (var file of files)
+	{
+		if (/\.js$/.test(file))
+		{
+			var filepath = path.join('PlugIns', file);
+			plugIns.push(filepath);
+		}
+	}
+
+	files = fs.readdirSync(userHomeDir + '/Documents/Peguy/Vectors/PlugIns');
+
+	for (var file of files)
+	{
+		if (/\.js$/.test(file))
+		{
+			var filepath = path.join(userHomeDir + '/Documents/Peguy/Vectors/PlugIns', file);
+			plugIns.push(filepath);
+		}
+	}
 }
 
 async function handleOpenFile()
@@ -197,6 +224,9 @@ else
 	recentFiles = JSON.parse(fileContent);
 }
 
+if (!fs.existsSync(userHomeDir + '/Documents/Peguy/Vectors/PlugIns'))
+	fs.mkdirSync(userHomeDir + '/Documents/Peguy/Vectors/PlugIns');
+
 if (!fs.existsSync(userHomeDir + '/Documents/Peguy/Vectors/assets.json'))
 	fs.writeFileSync(userHomeDir + '/Documents/Peguy/Vectors/assets.json', JSON.stringify(assets));
 else
@@ -204,6 +234,8 @@ else
 	var fileContent = fs.readFileSync(userHomeDir + '/Documents/Peguy/Vectors/assets.json', "utf8");
 	assets = JSON.parse(fileContent);
 }
+
+loadPlugIns();
 
 // Fonction de création d'une fenêtre
 function createWindow ()

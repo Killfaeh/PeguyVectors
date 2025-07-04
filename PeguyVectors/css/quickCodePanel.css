@@ -10,7 +10,7 @@
 	top: 10px;
 	bottom: calc(50% + 7px);
 	bottom: calc(100% - 29px);
-	/*padding: 10px;*/
+	padding: 0px;
 }
 
 .quickCodePanel .topPanel .search .searchInner

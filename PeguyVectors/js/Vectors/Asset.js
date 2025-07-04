@@ -12,7 +12,7 @@ function Asset($base64Code)
 	// Méthodes //
 	//////////////
 
-	this.render = function()
+	this.render = function render()
     {
         var svgCode = atob(base64Code.replace('data:image/svg+xml;base64,', ''));
         svgCode = svgCode.replaceAll('\n', '');
@@ -26,7 +26,9 @@ function Asset($base64Code)
 
         var svgObject = new Component(svgCode);
 
-        $this['super'].render(svgObject);
+        //$this['super'].render(svgObject);
+
+		$this.execSuper('render', [svgObject], render);
 
         return svgObject;
     };

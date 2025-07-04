@@ -1,4 +1,4 @@
-function Circle($radius)
+function RegularPolygon($radius, $nbSides)
 {
 	///////////////
 	// Attributs //
@@ -7,7 +7,12 @@ function Circle($radius)
     var radius = $radius;
 
     if (!utils.isset(radius))
-        radius = 50;
+        radius = 1.0;
+
+	var nbSides = $nbSides;
+
+	if (!utils.isset(nbSides) || nbSides < 3)
+		nbSides = 3;
 
 	var vectorObject = new Path([]);
 
@@ -17,10 +22,14 @@ function Circle($radius)
 
 	var updatePath = function()
     {
-		vectorObject.setOperations([]);
-		vectorObject.moveTo([-radius, 0.0]);
-		vectorObject.arc([radius, radius], 0, 0, 0, [radius, 0]);
-		vectorObject.arc([radius, radius], 0, 0, 0, [-radius, 0]);
+		var stepTheta = 2.0*Math.PI/nbSides;
+
+        vectorObject.setOperations([]);
+		vectorObject.moveTo([radius, 0.0]);
+
+        for (var i = 1; i <= nbSides; i++)
+            vectorObject.lineTo([radius*Math.cos(i*stepTheta), radius*Math.sin(i*stepTheta)]);
+
 		vectorObject.close();
     };
 
@@ -31,15 +40,10 @@ function Circle($radius)
         return svgObject;
     };
 
-    this.clone = function($cloneTransform)
+    this.clone = function()
 	{
-		var clone = Circle(radius);
-		
-		if ($cloneTransform === true)
-		    clone.setTransformList($this.getTransformList());
-
-        clone.fill($this.getFillColor());
-        clone.border($this.getBorderColor(), $this.getBorderWidth());
+		var clone = new RegularPolygon(radius, nbSides);
+		clone.setTransformList(clone.getTransformList());
 		return clone;
 	};
 
@@ -50,6 +54,7 @@ function Circle($radius)
 	// GET
 	
 	this.getRadius = function() { return radius; };
+	this.getNbSides = function() { return nbSides; };
 
 	// SET
 	
@@ -58,12 +63,24 @@ function Circle($radius)
         radius = $radius;
 
         if (!utils.isset(radius))
-            radius = 50;
+            radius = 1.0;
 
 		updatePath();
     };
 
     this.radius = function($radius) { $this.setRadius($radius); };
+
+	this.setNbSides = function($nbSides)
+    {
+        var nbSides = $nbSides;
+
+		if (!utils.isset(nbSides) || nbSides < 3)
+			nbSides = 3;
+
+		updatePath();
+    };
+
+	this.nbSides = function($nbSides) { $this.setNbSides($nbSides); };
 
 	//////////////
 	// Héritage //
@@ -75,4 +92,4 @@ function Circle($radius)
 }
 
 if (Loader !== null && Loader !== undefined)
-	Loader.hasLoaded("circle");
+	Loader.hasLoaded("regularPolygon");

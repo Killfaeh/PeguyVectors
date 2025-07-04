@@ -12,7 +12,7 @@ function Group()
 	// Méthodes //
 	//////////////
 
-	this.render = function()
+	this.render = function render()
     {
         var objectCode = '<g></g>';
 
@@ -21,7 +21,9 @@ function Group()
         for (var i = 0; i < elementsList.length; i++)
             svgObject.appendChild(elementsList[i].render());
 
-        $this['super'].render(svgObject);
+        //$this['super'].render(svgObject);
+
+        $this.execSuper('render', [svgObject], render);
 
         return svgObject;
     };

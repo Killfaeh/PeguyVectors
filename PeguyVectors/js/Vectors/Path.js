@@ -15,7 +15,7 @@ function Path($operations)
 	// Méthodes //
 	//////////////
 
-	this.render = function()
+	this.render = function render()
     {
         var d = '';
 
@@ -24,28 +24,31 @@ function Path($operations)
             var type = operations[i][0];
 
             if (type === 'M')
-                d = d + 'M ' + operations[i][1] + ',' + operations[i][2] + ' ';
+                d = d + 'M ' + operations[i][1][0] + ',' + operations[i][1][1] + ' ';
             else if (type === 'L')
-                d = d + 'L ' + operations[i][1] + ',' + operations[i][2] + ' ';
+                d = d + 'L ' + operations[i][1][0] + ',' + operations[i][1][1] + ' ';
             else if (type === 'Z')
                 d = d + 'Z ';
             else if (type === 'A')
-                d = d + 'A ' + operations[i][1] + ' ' + operations[i][2] + ' ' + operations[i][3] + ' ' + operations[i][4] + ' ' + operations[i][5] + ' ' + operations[i][6] + ',' + operations[i][7] + ' ';
+                d = d + 'A ' + operations[i][1][0] + ' ' + operations[i][1][1] + ' ' + operations[i][2] + ' ' + operations[i][3] + ' ' + operations[i][4] + ' ' + operations[i][5][0] + ',' + operations[i][5][1] + ' ';
             else if (type === 'Q')
-                d = d + 'Q ' + operations[i][1] + ',' + operations[i][2] + ' ' + operations[i][3] + ',' + operations[i][4] + ' ';
+                d = d + 'Q ' + operations[i][1][0] + ',' + operations[i][1][1] + ' ' + operations[i][2][0] + ',' + operations[i][2][1] + ' ';
             else if (type === 'QT')
-                d = d + 'Q ' + operations[i][1] + ',' + operations[i][2] + ' ' + operations[i][3] + ',' + operations[i][4] + ' T ' + operations[i][5] + ',' + operations[i][6] + ' ';
+                d = d + 'Q ' + operations[i][1][0] + ',' + operations[i][1][1] + ' ' + operations[i][2][0] + ',' + operations[i][2][1] + ' T ' + operations[i][3][0] + ',' + operations[i][3][1] + ' ';
             else if (type === 'C')
-                d = d + 'C ' + operations[i][1] + ',' + operations[i][2] + ' ' + operations[i][3] + ',' + operations[i][4] + ' ' + operations[i][5] + ',' + operations[i][6] + ' ';
+                d = d + 'C ' + operations[i][1][0] + ',' + operations[i][1][1] + ' ' + operations[i][2][0] + ',' + operations[i][2][1] + ' ' + operations[i][3][0] + ',' + operations[i][3][1] + ' ';
             else if (type === 'CS')
-                d = d + 'C ' + operations[i][1] + ',' + operations[i][2] + ' ' + operations[i][3] + ',' + operations[i][4] + ' ' + operations[i][5] + ',' + operations[i][6] + ' S ' + operations[i][7] + ',' + operations[i][8] + ' ' + operations[i][9] + ',' + operations[i][10] + ' ';
+                d = d + 'C ' + operations[i][1][0] + ',' + operations[i][1][1] + ' ' + operations[i][2][0] + ',' + operations[i][2][1] + ' ' + operations[i][3][0] + ',' + operations[i][3][1] + ' S ' + operations[i][4][0] + ',' + operations[i][4][1] + ' ' + operations[i][5][0] + ',' + operations[i][5][1] + ' ';
         }
 
         var objectCode = '<path d="' + d + '" />';
 
         var svgObject = new Component(objectCode);
 
-        $this['super'].render(svgObject);
+        //$this['super'].render(svgObject);
+        $this.execSuper('render', [svgObject], render);
+
+        console.log(svgObject);
 
         return svgObject;
     };
@@ -55,16 +58,21 @@ function Path($operations)
         return '';
     };
 
-    this.moveTo = function($x, $y)
+    this.addOperation = function($operation)
     {
-        operations.push(['M', $x, $y]);
-        return 'M ' + $x + ',' + $y + ' ';
+        operations.push($operation);
     };
 
-    this.lineTo = function($x, $y)
+    this.moveTo = function($point)
     {
-        operations.push(['L', $x, $y]);
-        return 'L ' + $x + ',' + $y + ' ';
+        operations.push(['M', $point]);
+        return 'M ' + $point[0] + ',' + $point[1] + ' ';
+    };
+
+    this.lineTo = function($point)
+    {
+        operations.push(['L', $point]);
+        return 'L ' + $point[0] + ',' + $point[1] + ' ';
     };
 
     this.close = function()
@@ -73,34 +81,34 @@ function Path($operations)
         return 'Z ';
     };
 
-    this.arc = function($rx, $ry, $rotation, $largeArcFlag, $sweepFlag, $endX, $endY)
+    this.arc = function($r, $rotation, $largeArcFlag, $sweepFlag, $end)
     {
-        operations.push(['A', $rx, $ry, $rotation, $largeArcFlag, $sweepFlag, $endX, $endY]);
-        return 'A ' + $rx + ' ' + $ry + ' ' + $rotation + ' ' + $largeArcFlag + ' ' + $sweepFlag + ' ' + $endX + ',' + $endY + ' ';
+        operations.push(['A', $r, $rotation, $largeArcFlag, $sweepFlag, $end]);
+        return 'A ' + $r[0] + ' ' + $r[1] + ' ' + $rotation + ' ' + $largeArcFlag + ' ' + $sweepFlag + ' ' + $end[0] + ',' + $end[1] + ' ';
     };
 
-    this.bezierQ = function($hx, $hy, $endX, $endY)
+    this.bezierQ = function($h, $end)
     {
-        operations.push(['Q', $hx, $hy, $endX, $endY]);
-        return 'Q ' + $hx + ',' + $hy + ' ' + $endX + ',' + $endY + ' ';
+        operations.push(['Q', $h, $end]);
+        return 'Q ' + $h[0] + ',' + $h[1] + ' ' + $end[0] + ',' + $end[1] + ' ';
     };
 
-    this.bezierQT = function($hx, $hy, $endX, $endY, $htx, $hty)
+    this.bezierQT = function($h, $end, $ht)
     {
-        operations.push(['QT', $hx, $hy, $endX, $endY, $htx, $hty]);
-        return 'Q ' + $hx + ',' + $hy + ' ' + $endX + ',' + $endY + ' T ' + $htx + ',' + $hty + ' ';
+        operations.push(['QT', $h, $end, $ht]);
+        return 'Q ' + $h[0] + ',' + $h[1] + ' ' + $end[0] + ',' + $end[1] + ' T ' + $ht[0] + ',' + $ht[1] + ' ';
     };
 
-    this.bezierC = function($h1x, $h1y, $h2x, $h2y, $endX, $endY)
+    this.bezierC = function($h1, $h2, $end)
     {
-        operations.push(['C', $h1x, $h1y, $h2x, $h2y, $endX, $endY]);
-        return 'C ' + $h1x + ',' + $h1y + ' ' + $h2x + ',' + $h2y + ' ' + $endX + ',' + $endY + ' ';
+        operations.push(['C', $h1, $h2, $end]);
+        return 'C ' + $h1[0] + ',' + $h1[1] + ' ' + $h2[0] + ',' + $h2[1] + ' ' + $end[0] + ',' + $end[1] + ' ';
     };
 
-    this.bezierCS = function($h1x, $h1y, $h2x, $h2y, $endX, $endY, $hs1x, $hs1y, $hs2x, $hs2y)
+    this.bezierCS = function($h1, $h2, $end, $hs1, $hs2)
     {
-        operations.push(['CS', $h1x, $h1y, $h2x, $h2y, $endX, $endY, $hs1x, $hs1y, $hs2x, $hs2y]);
-        return 'C ' + $h1x + ',' + $h1y + ' ' + $h2x + ',' + $h2y + ' ' + $endX + ',' + $endY + ' S ' + $hs1x + ',' + $hs1y + ' ' + $hs2x + ',' + $hs2y + ' ';
+        operations.push(['CS', $h1, $h2, $end, $hs1, $hs2]);
+        return 'C ' + $h1[0] + ',' + $h1[1] + ' ' + $h2[0] + ',' + $h2[1] + ' ' + $end[0] + ',' + $end[1] + ' S ' + $hs1[0] + ',' + $hs1[1] + ' ' + $hs2[0] + ',' + $hs2[1] + ' ';
     };
 
     this.clone = function($cloneTransform)
@@ -115,6 +123,11 @@ function Path($operations)
 		return clone;
 	};
 
+    this.borderToPath = function($width)
+    {
+        return new Path([]);
+    };
+
     this.samplePointsWithProperties = function($n)
     {
         var glPointsList = [];
@@ -126,7 +139,7 @@ function Path($operations)
         }
         else
         {
-            var previousOperation = ['M', 0.0, 0.0];
+            var previousOperation = ['M', [0.0, 0.0]];
             var previousType = previousOperation[0];
             var Mcoord = [0.0, 0.0];
 
@@ -139,38 +152,38 @@ function Path($operations)
                 Mcoord = [0.0, 0.0];
 
                 if (previousType === 'M')
-                    Mcoord = [previousOperation[1], previousOperation[2]];
+                    Mcoord = [previousOperation[1][0], previousOperation[1][1]];
                 else if (previousType === 'L')
-                    Mcoord = [previousOperation[1], previousOperation[2]];
+                    Mcoord = [previousOperation[1][0], previousOperation[1][1]];
                 else if (previousType === 'A')
-                    Mcoord = [previousOperation[6], previousOperation[7]];
+                    Mcoord = [previousOperation[5][0], previousOperation[5][1]];
                 else if (previousType === 'Q')
-                    Mcoord = [previousOperation[3], previousOperation[4]];
+                    Mcoord = [previousOperation[2][0], previousOperation[2][1]];
                 else if (previousType === 'QT')
-                    Mcoord = [previousOperation[3], previousOperation[4]];
+                    Mcoord = [previousOperation[2][0], previousOperation[2][1]];
                 else if (previousType === 'C')
-                    Mcoord = [previousOperation[5], previousOperation[6]];
+                    Mcoord = [previousOperation[3][0], previousOperation[3][1]];
                 else if (previousType === 'CS')
-                    Mcoord = [previousOperation[5], previousOperation[6]];
+                    Mcoord = [previousOperation[3][0], previousOperation[3][1]];
 
                 var d = 'M ' + Mcoord[0] + ',' + Mcoord[1] + ' ';
 
                 var type = operations[i][0];
 
                 if (type === 'L')
-                    d = d + 'L ' + operations[i][1] + ',' + operations[i][2] + ' ';
+                    d = d + 'L ' + operations[i][1][0] + ',' + operations[i][1][1] + ' ';
                 else if (type === 'A')
-                    d = d + 'A ' + operations[i][1] + ' ' + operations[i][2] + ' ' + operations[i][3] + ' ' + operations[i][4] + ' ' + operations[i][5] + ' ' + operations[i][6] + ',' + operations[i][7] + ' ';
+                    d = d + 'A ' + operations[i][1][0] + ' ' + operations[i][1][1] + ' ' + operations[i][2] + ' ' + operations[i][3] + ' ' + operations[i][4] + ' ' + operations[i][5][0] + ',' + operations[i][5][1] + ' ';
                 else if (type === 'Q')
-                    d = d + 'Q ' + operations[i][1] + ',' + operations[i][2] + ' ' + operations[i][3] + ',' + operations[i][4] + ' ';
+                    d = d + 'Q ' + operations[i][1][0] + ',' + operations[i][1][1] + ' ' + operations[i][2][0] + ',' + operations[i][2][1] + ' ';
                 else if (type === 'QT')
-                    d = d + 'Q ' + operations[i][1] + ',' + operations[i][2] + ' ' + operations[i][3] + ',' + operations[i][4] + ' T ' + operations[i][5] + ',' + operations[i][6] + ' ';
+                    d = d + 'Q ' + operations[i][1][0] + ',' + operations[i][1][1] + ' ' + operations[i][2][0] + ',' + operations[i][2][1] + ' T ' + operations[i][3][0] + ',' + operations[i][3][1] + ' ';
                 else if (type === 'C')
-                    d = d + 'C ' + operations[i][1] + ',' + operations[i][2] + ' ' + operations[i][3] + ',' + operations[i][4] + ' ' + operations[i][5] + ',' + operations[i][6] + ' ';
+                    d = d + 'C ' + operations[i][1][0] + ',' + operations[i][1][1] + ' ' + operations[i][2][0] + ',' + operations[i][2][1] + ' ' + operations[i][3][0] + ',' + operations[i][3][1] + ' ';
                 else if (type === 'CS')
-                    d = d + 'C ' + operations[i][1] + ',' + operations[i][2] + ' ' + operations[i][3] + ',' + operations[i][4] + ' ' + operations[i][5] + ',' + operations[i][6] + ' S ' + operations[i][7] + ',' + operations[i][8] + ' ' + operations[i][9] + ',' + operations[i][10] + ' ';
+                    d = d + 'C ' + operations[i][1][0] + ',' + operations[i][1][1] + ' ' + operations[i][2][0] + ',' + operations[i][2][1] + ' ' + operations[i][3][0] + ',' + operations[i][3][1] + ' S ' + operations[i][4][0] + ',' + operations[i][4][1] + ' ' + operations[i][5][0] + ',' + operations[i][5][1] + ' ';
                 else if (type === 'Z')
-                    d = d + 'L ' + operations[0][1] + ',' + operations[0][2] + ' ';
+                    d = d + 'L ' + Mcoord[0] + ',' + Mcoord[1] + ' ';
                     
                 var objectCode = '<path d="' + d + '" />';
                 var svgObject = new Component(objectCode);
@@ -180,23 +193,24 @@ function Path($operations)
                 //*
                 if (type === 'L')
                 {
-                    var tangent = Math.normalizeVector([operations[i][1]-Mcoord[0], operations[i][2]-Mcoord[1], 0.0]);
-                    var normal = [tangent[1], -tangent[0], 0.0];
-                    glPointsList.push({point: [Mcoord[0], Mcoord[1], 0.0], tangent: tangent, normal: normal, smooth: false});
-                    glPointsList.push({point: [operations[i][1], operations[i][2], 0.0], tangent: tangent, normal: normal, smooth: false});
+                    var tangent = (new Vector([operations[i][1][0]-Mcoord[0], operations[i][1][1]-Mcoord[1], 0.0])).normalize();
+                    var normal = [tangent.values()[1], -tangent.values()[0], 0.0];
+                    glPointsList.push({point: [Mcoord[0], Mcoord[1], 0.0], tangent: tangent.values(), normal: normal, smooth: false});
+                    glPointsList.push({point: [operations[i][1][0], operations[i][1][1], 0.0], tangent: tangent.values(), normal: normal, smooth: false});
                 }
                 else if (type === 'Z')
                 {
                     closed = true;
-                    var tangent = Math.normalizeVector([operations[i][1]-Mcoord[0], operations[i][2]-Mcoord[1], 0.0]);
-                    var normal = [tangent[1], -tangent[0], 0.0];
-                    glPointsList.push({point: [Mcoord[0], Mcoord[1], 0.0], tangent: tangent, normal: normal, smooth: false});
-                    glPointsList.push({point: [operations[0][1], operations[0][2], 0.0], tangent: tangent, normal: normal, smooth: false});
+
+                    var tangent = (new Vector([operations[0][1][0]-Mcoord[0], operations[0][1][1]-Mcoord[1], 0.0])).normalize();
+                    var normal = [tangent.values()[1], -tangent.values()[0], 0.0];
+                    glPointsList.push({point: [Mcoord[0], Mcoord[1], 0.0], tangent: tangent.values(), normal: normal, smooth: false});
+                    glPointsList.push({point: [operations[0][1][0], operations[0][1][1], 0.0], tangent: tangent.values(), normal: normal, smooth: false});
                 }
                 else
                 {
                     var totalLength = svgObject.totalLength();
-                    var Nsamples = 32;
+                    var Nsamples = Doc.resolution;
                     var samples = svgObject.samplePointsForWebGL(Nsamples);
 
                     for (var j = 0; j < samples.length; j++)
