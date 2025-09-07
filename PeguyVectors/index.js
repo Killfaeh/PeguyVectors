@@ -89,7 +89,7 @@ function loadPlugIns()
 					var filepath = __dirname + '/PlugIns/' + file + '/' + subFile;
 					var fileContent = fs.readFileSync(filepath, "utf8");
 					fs.writeFileSync(tmpFilePath, fileContent + '\n\nif (Loader !== null && Loader !== undefined)\n\tLoader.hasLoaded("' + tmpFilePath + '");');
-					plugIns.push(tmpFilePath.);
+					plugIns.push(tmpFilePath);
 				}
 			}
 		}
