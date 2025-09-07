@@ -50,7 +50,7 @@ sudo apt install npm
 
 ### Download and extract the archive
 
-Download the project archive via this Google Drive link : [https://drive.google.com/file/d/1KEX9cjaJuSYUl_rfMowsJil0Q7cH_YfW/view?usp=sharing](https://drive.google.com/file/d/1KEX9cjaJuSYUl_rfMowsJil0Q7cH_YfW/view?usp=sharing) </br>
+Download the project archive via this Google Drive link : [https://drive.google.com/file/d/15FYjeCq8DL7sSGp75SaL-ApwPKX790JF/view?usp=sharing](https://drive.google.com/file/d/15FYjeCq8DL7sSGp75SaL-ApwPKX790JF/view?usp=sharing) </br>
 Then, extract it.
 
 <div align="center">
