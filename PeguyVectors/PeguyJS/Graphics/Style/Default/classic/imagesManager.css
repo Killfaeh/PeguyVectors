@@ -15,6 +15,14 @@
 	top: 30px;
 }
 
+.images-manager-popup .search-field
+{
+	position: absolute;
+	left: 30px;
+	top: 75px;
+	display: none;
+}
+
 .images-manager-popup .images-list-block
 {
 	position: absolute;

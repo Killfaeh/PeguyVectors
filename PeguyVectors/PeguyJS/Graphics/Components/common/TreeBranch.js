@@ -154,11 +154,18 @@ function TreeBranch($html, $ordered)
 	{
 		var index = elementsList.indexOf($element);
 		
+		if (index < 0)
+		{
+			for (var i = 0; i < elementsList.length; i++)
+			{
+				if (utils.isset(elementsList[i].removeElement))
+					elementsList[i].removeElement($element);
+			}
+		}
+
 		while (index >= 0)
 		{
-			if (index > -1)
-				elementsList.splice(index, 1);
-			
+			elementsList.splice(index, 1);
 			index = elementsList.indexOf($element);
 		}
 		
@@ -662,7 +669,7 @@ function TreeBranch($html, $ordered)
 
 		for (var i = 0; i < $json.elementsList.length; i++)
 		{
-			var item = new TreeLeaf(json.elementsList[i].label);
+			var item = new TreeLeaf($json.elementsList[i].label);
 
 			if ($json.type === "branch")
 				item = new TreeBranch(json.elementsList[i].label, ordered);

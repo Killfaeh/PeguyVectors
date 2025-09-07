@@ -58,29 +58,90 @@ async function handleLoadSettingsInGUI()
 	mainWindow.webContents.executeJavaScript("viewManager.updateAssetManager(" + JSON.stringify(assets) + ");");
 }
 
-async function loadPlugIns()
+function loadPlugIns()
 {
+	var tmpPluginsPath = userHomeDir + '/Documents/Peguy/3D/PlugIns/tmp'; 
+
+	if (fs.existsSync(tmpPluginsPath))
+		fs.rmSync(tmpPluginsPath, { recursive: true, force: true });
+		
+	fs.mkdirSync(tmpPluginsPath);
+
+	var index = 1;
+	var timestamp = (new Date()).getTime();
+
+	plugIns = [];
+
 	var files = fs.readdirSync('PlugIns');
 
 	for (var file of files)
 	{
-		if (/\.js$/.test(file))
+		if (fs.lstatSync('PlugIns/' + file).isDirectory())
 		{
-			var filepath = path.join('PlugIns', file);
-			plugIns.push(filepath);
+			var subFiles = fs.readdirSync('PlugIns/' + file);
+
+			for (var subFile of subFiles)
+			{
+				if (subFile !== 'main.js')
+				{
+					var tmpFilePath = tmpPluginsPath + '/plugin-' + timestamp + '-' + index + '.js';
+					var filepath = __dirname + '/PlugIns/' + file + '/' + subFile;
+					var fileContent = fs.readFileSync(filepath, "utf8");
+					fs.writeFileSync(tmpFilePath, fileContent + '\n\nif (Loader !== null && Loader !== undefined)\n\tLoader.hasLoaded("' + tmpFilePath + '");');
+					plugIns.push(tmpFilePath);
+				}
+			}
 		}
+		else if (/\.js$/.test(file))
+		{
+			var tmpFilePath = tmpPluginsPath + '/plugin-' + timestamp + '-' + index + '.js';
+			var filepath = __dirname + '/' + path.join('PlugIns', file);
+			var fileContent = fs.readFileSync(filepath, "utf8");
+			fs.writeFileSync(tmpFilePath, fileContent + '\n\nif (Loader !== null && Loader !== undefined)\n\tLoader.hasLoaded("' + tmpFilePath + '");');
+			plugIns.push(tmpFilePath);
+		}
+
+		index++;
 	}
 
-	files = fs.readdirSync(userHomeDir + '/Documents/Peguy/Vectors/PlugIns');
+	files = fs.readdirSync(userHomeDir + '/Documents/Peguy/3D/PlugIns');
 
 	for (var file of files)
 	{
-		if (/\.js$/.test(file))
+		if (fs.lstatSync(userHomeDir + '/Documents/Peguy/3D/PlugIns/' + file).isDirectory())
 		{
-			var filepath = path.join(userHomeDir + '/Documents/Peguy/Vectors/PlugIns', file);
-			plugIns.push(filepath);
+			var subFiles = fs.readdirSync(userHomeDir + '/Documents/Peguy/3D/PlugIns/' + file);
+
+			for (var subFile of subFiles)
+			{
+				if (subFile !== 'main.js')
+				{
+					var tmpFilePath = tmpPluginsPath + '/plugin-' + timestamp + '-' + index + '.js';
+					var filepath = userHomeDir + '/Documents/Peguy/3D/PlugIns/' + file + '/' + subFile;
+					var fileContent = fs.readFileSync(filepath, "utf8");
+					fs.writeFileSync(tmpFilePath, fileContent + '\n\nif (Loader !== null && Loader !== undefined)\n\tLoader.hasLoaded("' + tmpFilePath + '");');
+					plugIns.push(tmpFilePath);
+				}
+			}
 		}
+		else if (/\.js$/.test(file))
+		{
+			var tmpFilePath = tmpPluginsPath + '/plugin-' + timestamp + '-' + index + '.js';
+			var filepath = path.join(userHomeDir + '/Documents/Peguy/3D/PlugIns', file);
+			var fileContent = fs.readFileSync(filepath, "utf8");
+			fs.writeFileSync(tmpFilePath, fileContent + '\n\nif (Loader !== null && Loader !== undefined)\n\tLoader.hasLoaded("' + tmpFilePath + '");');
+			plugIns.push(tmpFilePath);
+		}
+
+		index++;
 	}
+}
+
+async function handleRefreshPlugIns()
+{
+	loadPlugIns();
+	await mainWindow.webContents.executeJavaScript("viewManager.updatePlugIns(" + JSON.stringify({ plugIns: plugIns }) + ");");
+	return plugIns;
 }
 
 async function handleOpenFile()
@@ -94,17 +155,24 @@ async function handleOpenFile()
 		for (var i = 0; i < filePaths.length; i++)
 		{
 			var filePath = filePaths[i];
+			filePath = filePath.replace(/\/project.json$/, '').replace(/\\project.json$/, '');
 
-			if (/\.js$/.test(filePath) === true)
+			if (fs.existsSync(filePath) && fs.existsSync(filePath + '/project.json'))
 			{
-				if (fs.existsSync(filePath))
+				var tmp = filePath.split('/');
+				var fileName = tmp[tmp.length-1];
+				var configContent = fs.readFileSync(filePath + '/project.json', "utf8");
+				var config = JSON.parse(configContent);
+				var filesContent = {};
+
+				for (var i = 0; i < config.scripts.length; i++)
 				{
-					var tmp = filePath.split('/');
-					var fileName = tmp[tmp.length-1];
-					var fileContent = fs.readFileSync(filePath, "utf8");
-					output.push({ name: fileName, path: filePath, content: fileContent});
-					updateRecentFiles(filePath);
+					if (fs.existsSync(filePath + '/' + config.scripts[i] + '.js'))
+						filesContent[config.scripts[i]] = fs.readFileSync(filePath + '/' + config.scripts[i] + '.js', "utf8");
 				}
+
+				output.push({ name: fileName, path: filePath, content: filesContent});
+				updateRecentFiles(filePath);
 			}
 		}
 	}
@@ -120,8 +188,17 @@ async function handleOpenRecentFile($event, $filePath)
 	{
 		var tmp = $filePath.split('/');
 		var fileName = tmp[tmp.length-1];
-		var fileContent = fs.readFileSync($filePath, "utf8");
-		output = { name: fileName, path: $filePath, content: fileContent};
+		var configContent = fs.readFileSync($filePath + '/project.json', "utf8");
+		var config = JSON.parse(configContent);
+		var filesContent = {};
+
+		for (var i = 0; i < config.scripts.length; i++)
+		{
+			if (fs.existsSync($filePath + '/' + config.scripts[i] + '.js'))
+				filesContent[config.scripts[i]] = fs.readFileSync($filePath + '/' + config.scripts[i] + '.js', "utf8");
+		}
+
+		output = { name: fileName, path: $filePath, content: filesContent};
 		updateRecentFiles($filePath);
 	}
 
@@ -138,7 +215,18 @@ async function handleSaveFileAs($event, $content)
 	{
 		var tmp = filePath.split('/');
 		var fileName = tmp[tmp.length-1];
-		fs.writeFileSync(filePath, $content);
+		fs.mkdirSync(filePath);
+
+		var projectConfig = { projectName: fileName, scripts: [] };
+
+		for (key in $content)
+		{
+			projectConfig.scripts.push(key);
+			fs.writeFileSync(filePath + '/' + key + '.js', $content[key]);
+		}
+
+		fs.writeFileSync(filePath + '/project.json', JSON.stringify(projectConfig));
+
 		output = { name: fileName, path: filePath, content: $content};
 		updateRecentFiles(filePath);
 	}
@@ -152,11 +240,48 @@ async function handleSaveFile($event, $filePath, $content)
 
 	var tmp = $filePath.split('/');
 	var fileName = tmp[tmp.length-1];
-	fs.writeFileSync($filePath, $content);
+
+	var projectConfig = { projectName: fileName, scripts: [] };
+
+	for (key in $content)
+	{
+		projectConfig.scripts.push(key);
+		fs.writeFileSync($filePath + '/' + key + '.js', $content[key]);
+	}
+
+	fs.writeFileSync($filePath + '/project.json', JSON.stringify(projectConfig));
+
 	output = { name: fileName, path: $filePath, content: $content};
 	updateRecentFiles($filePath);
 
 	return output;
+}
+
+async function handleExecProgram($event, $filePath, $content)
+{
+	var tmp = $filePath.split('/');
+	var fileName = tmp[tmp.length-1];
+
+	if (fs.existsSync($filePath + '/run'))
+		fs.rmSync($filePath + '/run', { recursive: true, force: true });
+		
+	fs.mkdirSync($filePath + '/run');
+
+	var index = 1;
+	var timestamp = (new Date()).getTime();
+
+	var projectConfig = { projectName: fileName, scripts: [] };
+
+	for (key in $content)
+	{
+		var tmpFileName = key + '-' + timestamp + '-' + index + '.js';
+		var codeToSave = $content[key] + '\n\nif (Loader !== null && Loader !== undefined)\n\tLoader.hasLoaded("' + tmpFileName + '");';
+		projectConfig.scripts.push({ name: key, tmpFile: tmpFileName });
+		fs.writeFileSync($filePath + '/run/' + tmpFileName, codeToSave);
+		index++;
+	}
+
+	return projectConfig;
 }
 
 async function handleExportToSVG($event, $content)
@@ -270,10 +395,12 @@ app.whenReady().then(() =>
 {
 	ipcMain.on('setNotSavedFiles', handleSetNotSavedFiles);
 	ipcMain.handle('loadSettingsInGUI', handleLoadSettingsInGUI);
+	ipcMain.handle('refreshPlugIns', handleRefreshPlugIns);
 	ipcMain.handle('openFile', handleOpenFile);
 	ipcMain.handle('openRecentFile', handleOpenRecentFile);
 	ipcMain.handle('saveFileAs', handleSaveFileAs);
 	ipcMain.handle('saveFile', handleSaveFile);
+	ipcMain.handle('execProgram', handleExecProgram);
 	ipcMain.handle('exportToSVG', handleExportToSVG);
 	ipcMain.handle('exportToPNG', handleExportToPNG);
 	ipcMain.handle('saveAssets', handleSaveAssets);

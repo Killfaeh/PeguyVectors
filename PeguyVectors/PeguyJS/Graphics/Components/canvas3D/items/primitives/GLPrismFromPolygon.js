@@ -58,6 +58,9 @@ function GLPrismFromPolygon($radius1, $radius2, $height, $deltaX, $deltaY, $vert
 		glBuffer.setIndices(prismData.indices);
 
 		var polygon = new MathPolygon($verticesList);
+		var centroid = polygon.getCentroid();
+		centroid.setX(0.0);
+		centroid.setY(0.0);
 		var maxRadius = polygon.getMaxRadius();
 		
 		var scale1 = 1.0;

@@ -22,6 +22,7 @@ function Workspace($parentDocument, $width, $height, $docWidth, $docHeight)
 							+ '<clipPath id="mask">'
 								+ '<rect id="maskRect" class="background" x="0" y="0" width="' + docWidth + '" height="' + docHeight + '" />'
 							+ '</clipPath>'
+							+ '<g id="defs" ></g>'
 						+ '</defs>';
 	
 	var pattern = new Component(patternCode);
@@ -83,6 +84,7 @@ function Workspace($parentDocument, $width, $height, $docWidth, $docHeight)
 
 	this.empty = function()
 	{
+		pattern.getById('defs').empty();
 		g.getById('layers').empty();
 	};
 
@@ -93,6 +95,7 @@ function Workspace($parentDocument, $width, $height, $docWidth, $docHeight)
 						+ '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">'
 						+ '<svg version="1.0" x="0px" y="0px" xmlns="http://www.w3.org/2000/svg" width="' + docWidth + 'px" height="' + docHeight + 'px" viewBox="0 0 ' + docWidth + ' ' + docHeight + '">'
 							+ '<defs>'
+							+ pattern.getById('defs').innerHTML
 							+ '</defs>'
 							+ '<g>'
 							+ g.getById('layers').innerHTML
@@ -104,8 +107,10 @@ function Workspace($parentDocument, $width, $height, $docWidth, $docHeight)
 
 	this.exportToPNGFile = function($callback)
 	{
+		var tmpNode = new Component('<svg><defs>' + pattern.getById('defs').innerHTML + '</defs>' + g.getById('layers').innerHTML + '</svg>');
 		var svgTmp = new SVG(docWidth, docHeight);
-		svgTmp.appendChild(new Component(g.getById('layers').innerHTML));
+		svgTmp.innerHTML = tmpNode.innerHTML;
+		console.log(svgTmp.innerHTML);
 		svgTmp.toBitmap(function($img) { $callback($img); }, 'image/png');
 	};
 	
@@ -350,6 +355,7 @@ function Workspace($parentDocument, $width, $height, $docWidth, $docHeight)
 	
 	// GET
 
+	this.getPattern = function() { return pattern; };
 	this.getSVG = function() { return g; };
 
 	this.getDocWidth = function() { return docWidth; };

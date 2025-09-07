@@ -31,6 +31,8 @@ function GLDisc($radius, $angle, $radiusResolution, $thetaResolution)
 	
 	if (thetaResolution < 3)
 		thetaResolution = 3;
+
+	var deltaAngle = false;
 	
 	//////////////
 	// Méthodes //
@@ -38,7 +40,7 @@ function GLDisc($radius, $angle, $radiusResolution, $thetaResolution)
 
 	var init = function()
 	{
-		var discData = GLData.createDiscData(radius, angle, radiusResolution, thetaResolution);
+		var discData = GLData.createDiscData(radius, angle, radiusResolution, thetaResolution, deltaAngle);
 
 		glBuffer.setVertices(discData.vertices);
 		glBuffer.setNormals(discData.normals);
@@ -64,6 +66,16 @@ function GLDisc($radius, $angle, $radiusResolution, $thetaResolution)
 	// GET
 	
 	// SET
+
+	this.setDeltaAngle = function($deltaAngle)
+	{
+		deltaAngle = $deltaAngle;
+
+		if (!utils.isset(deltaAngle))
+			deltaAngle = false;
+
+		init();
+	};
 	
 	//////////////
 	// Héritage //

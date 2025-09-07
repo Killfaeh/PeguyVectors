@@ -431,7 +431,7 @@ function Canvas3DEditor($width, $height, $param)
 
 			dragged = true;
 		}
-		else if ($event.button === 1)
+		else if ($event.button === 1 || $event.button === 2)
 		{
 			startX = x;
 			startY = y;

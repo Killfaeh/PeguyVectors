@@ -579,8 +579,13 @@ function Component($html)
 			return [point.x, point.y, 0.0];
 		};
 
-		this.tangentAtLength = function($t)
+		this.tangentAtLength = function($t, $precision)
 		{
+			var precision = $precision;
+
+			if (!utils.isset(precision))
+				precision = 0.001;
+
 			var totalLength = $this.totalLength();
 
 			if ($t < 0.0)
@@ -588,8 +593,8 @@ function Component($html)
 			else if ($t > 1.0)
 				$t = 1.0;
 
-			var $tPrev = $t*totalLength-PEGUY.glPrecision;
-			var $tNext = $t*totalLength+PEGUY.glPrecision;
+			var $tPrev = ($t-precision)*totalLength;
+			var $tNext = ($t+precision)*totalLength;
 			
 			if ($tPrev < 0.0)
 				$tPrev = 0.0;
@@ -605,9 +610,10 @@ function Component($html)
 			var pointNext = node.getPointAtLength($tNext);
 			
 			var deltaVect = [pointNext.x-pointPrev.x, pointNext.y-pointPrev.y];
+			var tangent = (new Vector(deltaVect)).normalize().values();
 			var polar = Trigo.polar(deltaVect[0], deltaVect[1]);
 
-			return [deltaVect[0]/polar.r, deltaVect[1]/polar.r, 0.0];
+			return [tangent[0], tangent[1], 0.0];
 		};
 
 		this.normalAtLength = function($t)
@@ -661,12 +667,13 @@ function Component($html)
 				{
 					var t = i/(n-1);
 					var point = $this.pointAtLength(t);
-					var tangent = $this.tangentAtLength(t);
+					var tangent = $this.tangentAtLength(t, 1.0/n);
 					var normal = [tangent[1], -tangent[0], 0.0];
-					var data = { point: point, tangent: tangent, normal: normal, smooth: true};
+					var data = { point: point, tangent: tangent, normal: normal, smooth: true, t: t};
 					pointsList.push(data);
 				}
 			}
+			
 			return pointsList;
 		};
 	}

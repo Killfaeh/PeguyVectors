@@ -214,21 +214,26 @@ KEYWORDS.imagesLibrary = "Biblioteca de imágenes";
 KEYWORDS.noImageInLibrary = "Esta biblioteca no contiene imágenes.";
 KEYWORDS.errorNotImage = "Este archivo no es una imagen.";
 KEYWORDS.confirmDeleteImage = "¿Está seguro de que desea eliminar esta imagen? ";
+KEYWORDS.missingFile = "El archivo no se encuentra.";
+KEYWORDS.chooseFile = "Seleccionar un archivo";
+KEYWORDS.addImage = "Añadir una imagen";
+KEYWORDS.editImage = "Modificar la imagen";
+KEYWORDS.separateKeywordsWithCommas = "Separe las palabras clave con comas.";
 KEYWORDS.said = "Ha dicho";
 KEYWORDS.link = "Enlace";
 
 KEYWORDS.otherChoice = "Otra opción";
 
-KEYWORDS.addList = "[ES] Add list";
-KEYWORDS.listTitle = "[ES] List title";
-KEYWORDS.addTheList = "[ES] Add the list";
-KEYWORDS.addCard = "[ES] Add card";
-KEYWORDS.cardTitle = "[ES] Card title";
-KEYWORDS.addTheCard = "[ES] Add the card";
+KEYWORDS.addList = "Añadir una lista";
+KEYWORDS.listTitle = "Título de la lista";
+KEYWORDS.addTheList = "Añadir la lista";
+KEYWORDS.addCard = "Añadir un mapa";
+KEYWORDS.cardTitle = "Título de la tarjeta";
+KEYWORDS.addTheCard = "Añadir el mapa";
 
-KEYWORDS.dropFilesInThisArea = "[ES] Drop files in this area.";
-KEYWORDS.areYouSureYouWantToRemoveThisFileFromTheList = "[ES] Are you sure you want to remove this file from the list? ";
-KEYWORDS.areYouSureYouWantToRemoveSelectedFilesFromTheList = "[ES] Are you sure you want to remove selected files from the list? ";
+KEYWORDS.dropFilesInThisArea = "Coloque los archivos en esta zona.";
+KEYWORDS.areYouSureYouWantToRemoveThisFileFromTheList = "¿Está seguro de que desea eliminar este archivo de la lista?";
+KEYWORDS.areYouSureYouWantToRemoveSelectedFilesFromTheList = "¿Está seguro de que desea eliminar los archivos seleccionados de la lista?";
 
 var MONTHNAMES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 var DAYNAMES = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];

@@ -214,6 +214,11 @@ KEYWORDS.imagesLibrary = "Images library";
 KEYWORDS.noImageInLibrary = "No image in this library.";
 KEYWORDS.errorNotImage = "This file is not an image.";
 KEYWORDS.confirmDeleteImage = "Are you sure you want delete this image?";
+KEYWORDS.missingFile = "Missing file";
+KEYWORDS.chooseFile = "Choose a file";
+KEYWORDS.addImage = "Add image";
+KEYWORDS.editImage = "Edit image";
+KEYWORDS.separateKeywordsWithCommas = "Separate keywords with commas.";
 KEYWORDS.said = "said";
 KEYWORDS.link = "Link";
 

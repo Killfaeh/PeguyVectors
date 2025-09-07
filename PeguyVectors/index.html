@@ -32,8 +32,31 @@
 		
 		<script>
 
+			function delay(milliseconds)
+			{
+				return new Promise(resolve => { setTimeout(resolve, milliseconds); });
+			}
+
+			var consoleLog = console.log;
+
+			console.log = function($message)
+			{
+				consoleLog($message);
+
+				try
+				{
+					pythonObject.logJS($message);
+				}
+				catch ($exception)
+				{
+					//consoleLog("No Python");
+				}
+			};
+
+			var execConfig = null;
 			var appData;
 			var viewManager;
+			var waitScreen;
 			var notifCenter;
 			var progressBar;
 			
@@ -60,6 +83,9 @@
 			Loader.addScript('js/Vectors/Scale.js?token=' + Loader.getToken(), 'scale');
 			Loader.addScript('js/Vectors/SkewX.js?token=' + Loader.getToken(), 'skewX');
 			Loader.addScript('js/Vectors/SkewY.js?token=' + Loader.getToken(), 'skewY');
+			Loader.addScript('js/Vectors/Gradient.js?token=' + Loader.getToken(), 'gradient');
+			Loader.addScript('js/Vectors/LinearGradient.js?token=' + Loader.getToken(), 'linearGradient');
+			Loader.addScript('js/Vectors/RadialGradient.js?token=' + Loader.getToken(), 'radialGradient');
 			Loader.addScript('js/Vectors/VectorObject.js?token=' + Loader.getToken(), 'vectorObject');
 			Loader.addScript('js/Vectors/Square.js?token=' + Loader.getToken(), 'square');
 			Loader.addScript('js/Vectors/Rect.js?token=' + Loader.getToken(), 'rect');
@@ -97,8 +123,11 @@
 				
 				Debug.onError = function($message, $source, $lineno, $colno, $error)
 				{
-					//cancelSave3D();
+					if (waitScreen)
+						document.getElementById('main').removeChild(waitScreen);
 					
+					if (viewManager)
+						viewManager.displayError($message, $source, $lineno, $colno, $error);
 				};
 				
 				viewManager = new ViewManager();
@@ -106,6 +135,8 @@
 				//viewManager.resize();
 				document.getElementById('main').appendChild(viewManager);
 				viewManager.focus();
+
+				waitScreen = new FreezeScreen("<h2>Computing... Please wait.</h2>");
 				
 				document.getElementById('main').onDrop = function($event) { Events.emit('onDropFiles', [$event]); };
 				

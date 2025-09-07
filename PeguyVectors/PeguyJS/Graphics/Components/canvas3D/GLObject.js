@@ -32,6 +32,16 @@ function GLObject()
 
 	var mvMatrix = null;
 	var moved = false;
+
+	var boundingBox = 
+    {
+        minX: 0.0, minY: 0.0, minZ: 0.0,
+        maxX: 0.0, maxY: 0.0, maxZ: 0.0,
+        widthX: 0.0, widthY: 0.0, widthZ: 0.0,
+        centerX: 0.0, centerY: 0.0, centerZ: 0.0,
+        radiusX: 0.0, radiusY: 0.0, radiusZ: 0.0,
+        radius: 0.0, weight: 1.0, diag: 0.0
+    };
 	
 	var vertexShaderName = 'vertex-init';
 	var fragmentShaderName = 'fragment-init';
@@ -214,6 +224,8 @@ function GLObject()
 
 		return mvMatrix;
 	};
+
+	this.getBoundingBox = function() { return boundingBox; };
 	
 	this.getVertexShaderName = function() { return vertexShaderName; };
 	this.getFragmentShaderName = function() { return fragmentShaderName; };

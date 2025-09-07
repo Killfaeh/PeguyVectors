@@ -101,6 +101,8 @@ function InputFile($accept, $capture, $placeholder, $name, $multiple, $autoResiz
 		
 		component.getById('preview').appendChild(img);
 	};
+
+	this.updatePreview = function($url) { updatePreview($url); };
 	
 	var resize = function()
 	{
@@ -234,6 +236,10 @@ function InputFile($accept, $capture, $placeholder, $name, $multiple, $autoResiz
 		else
 			$this.onChange("");
 	};
+
+	this.onClick = function($event) {};
+	var onClick = function($event) { $this.onClick($event); };
+	component.getById('input').onClick = function($event) { onClick($event); };
 	
 	/*
 	var onLoad = function($value) {};

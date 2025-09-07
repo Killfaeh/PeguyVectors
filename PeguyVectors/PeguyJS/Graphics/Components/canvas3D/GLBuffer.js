@@ -7,7 +7,9 @@
 ////             https://www.facebook.com/suiseipark            ////
 ////////////////////////////////////////////////////////////////////
 
-var NB_GL_BUFFERS = 0;
+var GL_BUFFERS = [];
+var NB_GL_VERTICES = 0;
+var NB_GL_TRIANGLES = 0;
 var COLLADA_MESH = {};
 
 function GLBuffer()
@@ -54,6 +56,17 @@ function GLBuffer()
 	var colorsBuffer;
 	var textureBuffer;
 	var indexBuffer;
+
+	var boundingBox = 
+    {
+        minX: 0.0, minY: 0.0, minZ: 0.0,
+        maxX: 0.0, maxY: 0.0, maxZ: 0.0,
+        widthX: 0.0, widthY: 0.0, widthZ: 0.0,
+        centerX: 0.0, centerY: 0.0, centerZ: 0.0,
+        radiusX: 0.0, radiusY: 0.0, radiusZ: 0.0,
+        radius: 0.0, weight: 1.0, diag: 0.0,
+		vertices: [[0.0, 0.0, 0.0, 1.0], [0.0, 0.0, 0.0, 1.0], [0.0, 0.0, 0.0, 1.0], [0.0, 0.0, 0.0, 1.0], [0.0, 0.0, 0.0, 1.0], [0.0, 0.0, 0.0, 1.0], [-0.0, 0.0, 0.0, 1.0], [0.0, 0.0, 0.0, 1.0] ]
+    };
 	
 	//////////////
 	// Méthodes //
@@ -61,6 +74,8 @@ function GLBuffer()
 	
 	this.init = function($context)
 	{
+		//init = false;
+
 		if (init === false)
 		{
 			var drawMode = $context.STATIC_DRAW;
@@ -69,16 +84,96 @@ function GLBuffer()
 
 			nbVertices = vertices.length/3;
 
+			boundingBox = 
+			{
+				minX: 1000000000.0, minY: 1000000000.0, minZ: 1000000000.0,
+				maxX: -1000000000.0, maxY: -1000000000.0, maxZ: -1000000000.0,
+				widthX: 0.0, widthY: 0.0, widthZ: 0.0,
+				centerX: 0.0, centerY: 0.0, centerZ: 0.0,
+				radiusX: 0.0, radiusY: 0.0, radiusZ: 0.0,
+				radius: 0.0, weight: nbVertices, diag: 0.0
+			};
+
 			for (var i = 0; i < nbVertices; i++)
 			{
 				var x = vertices[i*3];
 				var y = vertices[i*3+1];
 				var z = vertices[i*3+2];
 				var outputVector = mvMatrix.multiplyVect([x, y, z, 1.0]);
-				tmpVertices.push(outputVector[0]);
-				tmpVertices.push(outputVector[1]);
-				tmpVertices.push(outputVector[2]);
+				x = outputVector[0];
+				y = outputVector[1];
+				z = outputVector[2];
+				tmpVertices.push(x);
+				tmpVertices.push(y);
+				tmpVertices.push(z);
+
+				boundingBox.centerX = boundingBox.centerX + x;
+				boundingBox.centerY = boundingBox.centerY + y;
+				boundingBox.centerZ = boundingBox.centerZ + z;
 			}
+
+			boundingBox.centerX = boundingBox.centerX/nbVertices;
+			boundingBox.centerY = boundingBox.centerY/nbVertices;
+			boundingBox.centerZ = boundingBox.centerZ/nbVertices;
+
+			// Calcul de la bounding box
+			for (var i = 0; i < nbVertices; i++)
+			{
+				var x = tmpVertices[i*3];
+				var y = tmpVertices[i*3+1];
+				var z = tmpVertices[i*3+2];
+				var dist = Math.sqrt((x-boundingBox.centerX)*(x-boundingBox.centerX) + (y-boundingBox.centerY)*(y-boundingBox.centerY) + (z-boundingBox.centerZ)*(z-boundingBox.centerZ));
+				var distX = Math.sqrt((y-boundingBox.centerY)*(y-boundingBox.centerY) + (z-boundingBox.centerZ)*(z-boundingBox.centerZ));
+				var distY = Math.sqrt((x-boundingBox.centerX)*(x-boundingBox.centerX) + (z-boundingBox.centerZ)*(z-boundingBox.centerZ));
+				var distZ = Math.sqrt((x-boundingBox.centerX)*(x-boundingBox.centerX) + (y-boundingBox.centerY)*(y-boundingBox.centerY));
+
+				if (x < boundingBox.minX)
+					boundingBox.minX = x;
+				
+				if (x > boundingBox.maxX)
+					boundingBox.maxX = x;
+
+				if (y < boundingBox.minY)
+					boundingBox.minY = y;
+				
+				if (y > boundingBox.maxY)
+					boundingBox.maxY = y;
+
+				if (z < boundingBox.minZ)
+					boundingBox.minZ = z;
+				
+				if (z > boundingBox.maxZ)
+					boundingBox.maxZ = z;
+
+				if (dist > boundingBox.radius)
+					boundingBox.radius = dist;
+
+				if (distX > boundingBox.radiusX)
+					boundingBox.radiusX = distX;
+
+				if (distY > boundingBox.radiusY)
+					boundingBox.radiusY = distY;
+
+				if (distZ > boundingBox.radiusZ)
+					boundingBox.radiusZ = distZ;
+			}
+
+			boundingBox.widthX = boundingBox.maxX - boundingBox.minX;
+			boundingBox.widthY = boundingBox.maxY - boundingBox.minY;
+			boundingBox.widthZ = boundingBox.maxZ - boundingBox.minZ;
+			boundingBox.diag = Math.sqrt(boundingBox.widthX*boundingBox.widthX + boundingBox.widthY*boundingBox.widthY + boundingBox.widthZ*boundingBox.widthZ);
+
+			boundingBox.vertices = 
+			[
+				[boundingBox.minX, boundingBox.minY, boundingBox.minZ, 1.0],
+				[boundingBox.minX, -boundingBox.minY, boundingBox.minZ, 1.0],
+				[-boundingBox.minX, -boundingBox.minY, boundingBox.minZ, 1.0],
+				[-boundingBox.minX, boundingBox.minY, boundingBox.minZ, 1.0],
+				[boundingBox.minX, boundingBox.minY, -boundingBox.minZ, 1.0],
+				[boundingBox.minX, -boundingBox.minY, -boundingBox.minZ, 1.0],
+				[-boundingBox.minX, -boundingBox.minY, -boundingBox.minZ, 1.0],
+				[-boundingBox.minX, boundingBox.minY, -boundingBox.minZ, 1.0]
+			];
 			
 			verticesBuffer = $context.createBuffer();
 			normalsBuffer = $context.createBuffer();
@@ -183,7 +278,7 @@ function GLBuffer()
 				outlineClone.linkShaders($context);
 				outlineClone.init($context);
 			}
-			
+
 			init = true; 
 		}
 	};
@@ -191,7 +286,7 @@ function GLBuffer()
 	this.update = function($context)
 	{
 		//init = false; 
-		this.init($context); 
+		this.init($context);
 	}; 
 	
 	this.render = function render($context) 
@@ -630,8 +725,8 @@ function GLBuffer()
 		for (var i = 0; i < rawData.v.length/3; i++)
 			rawData.materials.push($this.getMaterial().getName());
 
-		console.log("Buffer : ");
-		console.log(rawData);
+		//console.log("Buffer : ");
+		//console.log(rawData);
 
 		return rawData;
 	};
@@ -734,6 +829,8 @@ function GLBuffer()
 	this.getOutlineOffset = function() { return outlineOffset; };
 	
 	this.getFindEdges = function() { return findEdges; };
+
+	this.getBoundingBox = function() { return boundingBox; };
 	
 	// SET
 	this.setInit = function($init) { init = $init; };
@@ -868,7 +965,7 @@ function GLBuffer()
 		init = false;
 		vertices = $vertices;
 		nbVertices = vertices.length/3;
-		this.update($context);
+		$this.update($context);
 	};
 	
 	this.setNormals = function($normals)
@@ -1142,8 +1239,8 @@ function GLBuffer()
 	// Héritage //
 	//////////////
 
-	NB_GL_BUFFERS++;
 	var $this = utils.extend(glObject, this);
+	GL_BUFFERS.push($this);
 	return $this;
 }
 

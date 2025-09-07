@@ -19,6 +19,7 @@ Doc =
 
     elementsList: [],
     transformList: [],
+    defList: [],
 
     add: function($input)
     {
@@ -35,6 +36,8 @@ Doc =
                 Doc.elementsList.push($input);
             else if (type === 'transform')
                 Doc.transformList.push($input);
+            else
+                Doc.defList.push($input);
         }
     },
 
@@ -46,6 +49,8 @@ Doc =
             Doc.elementsList.splice($index, 0, $input);
         else if (type === 'transform')
             Doc.transformList.splice($index, 0, $input);
+        else
+            Doc.defList.splice($index, 0, $input);
     },
 
     remove: function($input)
@@ -66,12 +71,20 @@ Doc =
             if (index > -1)
                 Doc.transformList.splice(index, 1);
         }
+        else
+        {
+            var index = Doc.defList.indexOf($input);
+            
+            if (index > -1)
+                Doc.defList.splice(index, 1);
+        }
     },
 
     empty: function($element)
     {
         Doc.elementsList = [];
         Doc.transformList = [];
+        Doc.defList = [];
         Doc.width = 1000;
         Doc.height = 1000;
         Doc.centerX = 500;

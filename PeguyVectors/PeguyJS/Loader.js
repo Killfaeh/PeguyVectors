@@ -464,6 +464,7 @@ function ScriptLoader($url, $name)
 		if (loaded !== true)
 		{
 			var script = document.createElement("script");
+			script.setAttribute('id', 'script-file-' + name);
 			script.src = url + "?token=" + Loader.getToken();
 			document.getElementById('main').appendChild(script);
 		}
@@ -474,6 +475,19 @@ function ScriptLoader($url, $name)
 	this.hasLoaded = function()
 	{
 		onload();
+	};
+
+	this.remove = function()
+	{
+		var scriptNode = document.getElementById('script-file-' + name);
+
+		if (scriptNode)
+		{
+			var parentNode = scriptNode.parentNode;
+
+			if (parentNode)
+				parentNode.removeChild(scriptNode);
+		}
 	};
 
 	////////////////
@@ -569,6 +583,7 @@ function Loader($root, $style)
 	// Attributs //
 	///////////////
 
+	var loadedOnce = false;
 	var init = false;
 	var root = $root;
 	var style = 'Default';
@@ -689,6 +704,8 @@ function Loader($root, $style)
 	scripts['components'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/common/Components.js', 'components');
 	scripts['component'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/common/Component.js', 'component');
 	scripts['screen'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/common/Screen.js', 'screen');
+	scripts['view'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/common/View.js', 'view');
+	scripts['application'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/common/Application.js', 'application');
 	scripts['infoPopup'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/common/InfoPopup.js', 'infoPopup');
 	scripts['inputRadio'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/common/InputRadio.js', 'inputRadio');
 	scripts['inputCheckBox'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/common/InputCheckBox.js', 'inputCheckBox');
@@ -868,148 +885,158 @@ function Loader($root, $style)
 			scripts['keywords'] = new ScriptLoader(root + 'PeguyJS/Keywords/en.js', 'keywords');
 		}
 		
-		// Module kanban
-		
-		if (additionnalModules.indexOf('kanban') >= 0)
+		if (loadedOnce === false)
 		{
-			scripts['kanbanColumn'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/common/KanbanColumn.js', 'kanbanColumn');
-			scripts['kanbanCard'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/common/KanbanCard.js', 'kanbanCard');
-			components['kanban'] = new ComponentLoader('kanban', root + 'PeguyJS/Graphics/Components/common/Kanban.js', root + 'PeguyJS/Graphics/Style/' + style + '/' + mode + '/kanban.css');
-		}
-		
-		// Module contentEditable
-		
-		if (additionnalModules.indexOf('contentEditable') >= 0)
-		{
-			components['contentEditable'] = new ComponentLoader('contentEditable', root + 'PeguyJS/Graphics/Components/common/ContentEditable.js', root + 'PeguyJS/Graphics/Style/' + style + '/' + mode + '/contentEditable.css');
-		}
-
-		// Module codeEditor
-		
-		if (additionnalModules.indexOf('codeEditor') >= 0)
-		{
-			components['codeEditor'] = new ComponentLoader('codeEditor', root + 'PeguyJS/Graphics/Components/common/CodeEditor.js', root + 'PeguyJS/Graphics/Style/' + style + '/common/codeEditor.css');
-		}
-		
-		// Module math
-		
-		if (additionnalModules.indexOf('canvas3D') >= 0 && additionnalModules.indexOf('math') < 0)
-			additionnalModules.push('math');
-
-		if (additionnalModules.indexOf('math') >= 0)
-		{
-			scripts['math'] = new ScriptLoader(root + 'PeguyJS/Math/Math.js', 'math');
-			scripts['polynomial'] = new ScriptLoader(root + 'PeguyJS/Math/Polynomial.js', 'polynomial');
-			scripts['trigo'] = new ScriptLoader(root + 'PeguyJS/Math/Trigo.js', 'trigo');
-			scripts['vectors'] = new ScriptLoader(root + 'PeguyJS/Math/Vectors.js', 'vectors');
-			scripts['math-polygon'] = new ScriptLoader(root + 'PeguyJS/Math/MathPolygon.js', 'math-polygon');
-			scripts['matrix'] = new ScriptLoader(root + 'PeguyJS/Math/Matrix/Matrix.js', 'matrix');
-			scripts['orthoMatrix'] = new ScriptLoader(root + 'PeguyJS/Math/Matrix/OrthoMatrix.js', 'orthoMatrix');
-			scripts['perspectiveMatrix'] = new ScriptLoader(root + 'PeguyJS/Math/Matrix/PerspectiveMatrix.js', 'perspectiveMatrix');
-			scripts['rotateMatrix'] = new ScriptLoader(root + 'PeguyJS/Math/Matrix/RotateMatrix.js', 'rotateMatrix');
-			scripts['scaleMatrix'] = new ScriptLoader(root + 'PeguyJS/Math/Matrix/ScaleMatrix.js', 'scaleMatrix');
-			scripts['translateMatrix'] = new ScriptLoader(root + 'PeguyJS/Math/Matrix/TranslateMatrix.js', 'translateMatrix');
-		}
-		
-		// Module chart
-	
-		if (additionnalModules.indexOf('charts') >= 0)
-		{
-			scripts['chart'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/charts/Chart.js', 'chart');
-			scripts['columnChart'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/charts/ColumnChart.js', 'columnChart');
-			scripts['lineChart'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/charts/LineChart.js', 'lineChart');
-			scripts['pieChart'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/charts/PieChart.js', 'pieChart');
-			scripts['donutChart'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/charts/DonutChart.js', 'donutChart');
-			scripts['gaugeChart'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/charts/GaugeChart.js', 'gaugeChart');
-		}
-		
-		// Module nodes
-		
-		if (additionnalModules.indexOf('nodes') >= 0)
-		{
-			scripts['nodeItem'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/common/NodeItem.js', 'nodeItem');
-			scripts['nodeInput'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/common/NodeInput.js', 'nodeInput');
-			scripts['nodeOutput'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/common/NodeOutput.js', 'nodeOutput');
-			scripts['nodesLink'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/common/NodesLink.js', 'nodesLink');
-			scripts['nodesGroup'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/common/NodesGroup.js', 'nodesLink');
-			components['nodesPanel'] = new ComponentLoader('nodesPanel', root + 'PeguyJS/Graphics/Components/common/NodesPanel.js', root + 'PeguyJS/Graphics/Style/' + style + '/common/nodesPanel.css');
-		}
-		
-		// Module canvas2D
-		
-		if (additionnalModules.indexOf('canvas2D') >= 0)
-		{
-			scripts['object2D'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas2D/Object2D.js', 'object2D');
-			scripts['group2D'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas2D/Group2D.js', 'group2D');
-			scripts['linearGradient2D'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas2D/LinearGradient2D.js', 'linearGradient2D');
-			scripts['radialGradient2D'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas2D/RadialGradient2D.js', 'radialGradient2D');
-			scripts['conicGradient2D'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas2D/ConicGradient2D.js', 'conicGradient2D');
-			scripts['image2D'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas2D/Image2D.js', 'image2D');
-			scripts['sprite2D'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas2D/Sprite2D.js', 'sprite2D');
-			scripts['rect2D'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas2D/Rect2D.js', 'rect2D');
-			scripts['circle2D'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas2D/Circle2D.js', 'circle2D');
-		}
-
-		// Module canvas3D
-
-		if (additionnalModules.indexOf('canvas3D') >= 0)
-		{
-			scripts['canvas3D'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/Canvas3D.js', 'canvas3D');
-			scripts['canvas3DEditor'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/Canvas3DEditor.js', 'canvas3DEditor');
-			scripts['gl-buffer'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/GLBuffer.js', 'gl-buffer');
-			scripts['gl-camera'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/GLCamera.js', 'gl-camera');
-			scripts['gl-group'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/GLGroup.js', 'gl-group');
-			scripts['gl-instance'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/GLInstance.js', 'gl-instance');
-			scripts['gl-light'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/GLLight.js', 'gl-light');
-			scripts['gl-material'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/GLMaterial.js', 'gl-material');
-			scripts['gl-object'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/GLObject.js', 'gl-object');
-			scripts['shader'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/Shader.js', 'shader');
-			scripts['shader-program'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/ShaderProgram.js', 'shader-program');
-			scripts['texture'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/Texture.js', 'texture');
-
-			scripts['gl-data'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/GLData.js', 'gl-data');
-			scripts['gl-working-grid'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/GLWorkingGrid.js', 'gl-working-grid');
-			scripts['gl-working-mark'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/GLWorkingMark.js', 'gl-working-mark');
-			scripts['gl-cone'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLCone.js', 'gl-cone');
-			scripts['gl-cuboid'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLCuboid.js', 'gl-cuboid');
-			scripts['gl-cuboid-sphere'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLCuboidSphere.js', 'gl-cuboid-sphere');
-			scripts['gl-cylinder'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLCylinder.js', 'gl-cylinder');
-			scripts['gl-disc'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLDisc.js', 'gl-disc');
-			scripts['gl-line'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLLine.js', 'gl-line');
-			scripts['gl-pipe'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLPipe.js', 'gl-pipe');
-			scripts['gl-polygon'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLPolygon.js', 'gl-polygon');
-			scripts['gl-polyline'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLPolyline.js', 'gl-polyline');
-			scripts['gl-prism'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLPrism.js', 'gl-prism');
-			scripts['gl-prism-from-polygon'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLPrismFromPolygon.js', 'gl-prism-from-polygon');
-			scripts['gl-prism-revolution'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLPrismRevolution.js', 'gl-prism-revolution');
-			scripts['gl-pyramid'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLPyramid.js', 'gl-pyramid');
-			scripts['gl-pyramid-from-polygon'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLPyramidFromPolygon.js', 'gl-pyramid-from-polygon');
-			scripts['gl-quad'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLQuad.js', 'gl-quad');
-			scripts['gl-rect'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLRect.js', 'gl-rect');
-			scripts['gl-revolution'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLRevolution.js', 'gl-revolution');
-			scripts['gl-ring'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLRing.js', 'gl-ring');
-			scripts['gl-uv-ellipsoid'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLUVEllipsoid.js', 'gl-uv-ellipsoid');
-			scripts['gl-uv-sphere'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLUVSphere.js', 'gl-uv-sphere');
-			scripts['gl-ribbon-from-curve'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLRibbonFromCurve.js', 'gl-ribbon-from-curve');
-			scripts['gl-prism-from-curve'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLPrismFromCurve.js', 'gl-prism-from-curve');
-
-			scripts['fragment-bump'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/shaders/FragmentShaderBump.js', 'fragment-bump');
-			scripts['fragment-color'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/shaders/FragmentShaderColor.js', 'fragment-color');
-			scripts['fragment-color-ramp'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/shaders/FragmentShaderColorRamp.js', 'fragment-color-ramp');
-			scripts['fragment-init'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/shaders/FragmentShaderInit.js', 'fragment-init');
-			scripts['fragment-manga'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/shaders/FragmentShaderManga.js', 'fragment-manga');
-			scripts['fragment-modeling'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/shaders/FragmentShaderModeling.js', 'fragment-modeling');
-			scripts['fragment-material'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/shaders/FragmentShaderMaterial.js', 'fragment-material');
-			scripts['fragment-monochrome'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/shaders/FragmentShaderMonochrome.js', 'fragment-monochrome');
-			scripts['fragment-normals'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/shaders/FragmentShaderNormals.js', 'fragment-normals');
-			scripts['fragment-outline'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/shaders/FragmentShaderOutline.js', 'fragment-outline');
-			scripts['fragment-sobel-edge'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/shaders/FragmentShaderSobelEdge.js', 'fragment-sobel-edge');
-			scripts['vertex-color'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/shaders/VertexShaderColor.js', 'vertex-color');
-			scripts['vertex-init'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/shaders/VertexShaderInit.js', 'vertex-init');
-			scripts['vertex-material'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/shaders/VertexShaderMaterial.js', 'vertex-material');
-			scripts['vertex-normals'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/shaders/VertexShaderNormals.js', 'vertex-normals');
-			scripts['vertex-normals-texture'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/shaders/VertexShaderNormalsTexture.js', 'vertex-normals-texture');
+			// Module kanban
 			
+			if (additionnalModules.indexOf('kanban') >= 0)
+			{
+				scripts['kanbanColumn'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/common/KanbanColumn.js', 'kanbanColumn');
+				scripts['kanbanCard'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/common/KanbanCard.js', 'kanbanCard');
+				components['kanban'] = new ComponentLoader('kanban', root + 'PeguyJS/Graphics/Components/common/Kanban.js', root + 'PeguyJS/Graphics/Style/' + style + '/' + mode + '/kanban.css');
+			}
+			
+			// Module contentEditable
+			
+			if (additionnalModules.indexOf('contentEditable') >= 0)
+			{
+				components['contentEditable'] = new ComponentLoader('contentEditable', root + 'PeguyJS/Graphics/Components/common/ContentEditable.js', root + 'PeguyJS/Graphics/Style/' + style + '/' + mode + '/contentEditable.css');
+			}
+
+			// Module codeEditor
+			
+			if (additionnalModules.indexOf('codeEditor') >= 0)
+			{
+				components['codeEditor'] = new ComponentLoader('codeEditor', root + 'PeguyJS/Graphics/Components/common/CodeEditor.js', root + 'PeguyJS/Graphics/Style/' + style + '/common/codeEditor.css');
+			}
+			
+			// Module math
+			
+			if (additionnalModules.indexOf('canvas3D') >= 0 && additionnalModules.indexOf('math') < 0)
+				additionnalModules.push('math');
+
+			if (additionnalModules.indexOf('math') >= 0)
+			{
+				scripts['math'] = new ScriptLoader(root + 'PeguyJS/Math/Math.js', 'math');
+				scripts['polynomial'] = new ScriptLoader(root + 'PeguyJS/Math/Polynomial.js', 'polynomial');
+				scripts['trigo'] = new ScriptLoader(root + 'PeguyJS/Math/Trigo.js', 'trigo');
+				scripts['vectors'] = new ScriptLoader(root + 'PeguyJS/Math/Vectors.js', 'vectors');
+				scripts['bezier'] = new ScriptLoader(root + 'PeguyJS/Math/Curves/Bezier.js', 'bezier');
+				scripts['bezierCubic'] = new ScriptLoader(root + 'PeguyJS/Math/Curves/BezierCubic.js', 'bezierCubic');
+				scripts['bezierQuadratic'] = new ScriptLoader(root + 'PeguyJS/Math/Curves/BezierQuadratic.js', 'bezierQuadratic');
+				scripts['ellipseArc'] = new ScriptLoader(root + 'PeguyJS/Math/Curves/EllipseArc.js', 'ellipseArc');
+				scripts['math-polygon'] = new ScriptLoader(root + 'PeguyJS/Math/MathPolygon.js', 'math-polygon');
+				scripts['math-plane'] = new ScriptLoader(root + 'PeguyJS/Math/MathPlane.js', 'math-plane');
+				scripts['matrix'] = new ScriptLoader(root + 'PeguyJS/Math/Matrix/Matrix.js', 'matrix');
+				scripts['orthoMatrix'] = new ScriptLoader(root + 'PeguyJS/Math/Matrix/OrthoMatrix.js', 'orthoMatrix');
+				scripts['perspectiveMatrix'] = new ScriptLoader(root + 'PeguyJS/Math/Matrix/PerspectiveMatrix.js', 'perspectiveMatrix');
+				scripts['rotateMatrix'] = new ScriptLoader(root + 'PeguyJS/Math/Matrix/RotateMatrix.js', 'rotateMatrix');
+				scripts['scaleMatrix'] = new ScriptLoader(root + 'PeguyJS/Math/Matrix/ScaleMatrix.js', 'scaleMatrix');
+				scripts['translateMatrix'] = new ScriptLoader(root + 'PeguyJS/Math/Matrix/TranslateMatrix.js', 'translateMatrix');
+			}
+			
+			// Module chart
+		
+			if (additionnalModules.indexOf('charts') >= 0)
+			{
+				scripts['chart'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/charts/Chart.js', 'chart');
+				scripts['columnChart'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/charts/ColumnChart.js', 'columnChart');
+				scripts['lineChart'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/charts/LineChart.js', 'lineChart');
+				scripts['pieChart'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/charts/PieChart.js', 'pieChart');
+				scripts['donutChart'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/charts/DonutChart.js', 'donutChart');
+				scripts['gaugeChart'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/charts/GaugeChart.js', 'gaugeChart');
+			}
+			
+			// Module nodes
+			
+			if (additionnalModules.indexOf('nodes') >= 0)
+			{
+				scripts['nodeItem'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/common/NodeItem.js', 'nodeItem');
+				scripts['nodeInput'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/common/NodeInput.js', 'nodeInput');
+				scripts['nodeOutput'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/common/NodeOutput.js', 'nodeOutput');
+				scripts['nodesLink'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/common/NodesLink.js', 'nodesLink');
+				scripts['nodesGroup'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/common/NodesGroup.js', 'nodesLink');
+				components['nodesPanel'] = new ComponentLoader('nodesPanel', root + 'PeguyJS/Graphics/Components/common/NodesPanel.js', root + 'PeguyJS/Graphics/Style/' + style + '/common/nodesPanel.css');
+			}
+			
+			// Module canvas2D
+			
+			if (additionnalModules.indexOf('canvas2D') >= 0)
+			{
+				scripts['object2D'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas2D/Object2D.js', 'object2D');
+				scripts['group2D'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas2D/Group2D.js', 'group2D');
+				scripts['linearGradient2D'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas2D/LinearGradient2D.js', 'linearGradient2D');
+				scripts['radialGradient2D'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas2D/RadialGradient2D.js', 'radialGradient2D');
+				scripts['conicGradient2D'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas2D/ConicGradient2D.js', 'conicGradient2D');
+				scripts['image2D'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas2D/Image2D.js', 'image2D');
+				scripts['sprite2D'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas2D/Sprite2D.js', 'sprite2D');
+				scripts['rect2D'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas2D/Rect2D.js', 'rect2D');
+				scripts['circle2D'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas2D/Circle2D.js', 'circle2D');
+			}
+
+			// Module canvas3D
+
+			if (additionnalModules.indexOf('canvas3D') >= 0)
+			{
+				scripts['canvas3D'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/Canvas3D.js', 'canvas3D');
+				scripts['canvas3DEditor'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/Canvas3DEditor.js', 'canvas3DEditor');
+				scripts['gl-buffer'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/GLBuffer.js', 'gl-buffer');
+				scripts['gl-camera'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/GLCamera.js', 'gl-camera');
+				scripts['gl-group'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/GLGroup.js', 'gl-group');
+				scripts['gl-instance'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/GLInstance.js', 'gl-instance');
+				scripts['gl-light'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/GLLight.js', 'gl-light');
+				scripts['gl-material'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/GLMaterial.js', 'gl-material');
+				scripts['gl-object'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/GLObject.js', 'gl-object');
+				scripts['shader'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/Shader.js', 'shader');
+				scripts['shader-program'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/ShaderProgram.js', 'shader-program');
+				scripts['texture'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/Texture.js', 'texture');
+
+				scripts['gl-data'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/GLData.js', 'gl-data');
+				scripts['gl-working-grid'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/GLWorkingGrid.js', 'gl-working-grid');
+				scripts['gl-working-mark'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/GLWorkingMark.js', 'gl-working-mark');
+				scripts['gl-stack'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/composite/GLStack.js', 'gl-stack');
+				scripts['gl-cone'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLCone.js', 'gl-cone');
+				scripts['gl-cuboid'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLCuboid.js', 'gl-cuboid');
+				scripts['gl-cuboid-sphere'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLCuboidSphere.js', 'gl-cuboid-sphere');
+				scripts['gl-cylinder'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLCylinder.js', 'gl-cylinder');
+				scripts['gl-disc'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLDisc.js', 'gl-disc');
+				scripts['gl-line'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLLine.js', 'gl-line');
+				scripts['gl-pipe'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLPipe.js', 'gl-pipe');
+				scripts['gl-polygon'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLPolygon.js', 'gl-polygon');
+				scripts['gl-polyline'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLPolyline.js', 'gl-polyline');
+				scripts['gl-prism'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLPrism.js', 'gl-prism');
+				scripts['gl-prism-from-polygon'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLPrismFromPolygon.js', 'gl-prism-from-polygon');
+				scripts['gl-prism-revolution'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLPrismRevolution.js', 'gl-prism-revolution');
+				scripts['gl-pyramid'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLPyramid.js', 'gl-pyramid');
+				scripts['gl-pyramid-from-polygon'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLPyramidFromPolygon.js', 'gl-pyramid-from-polygon');
+				scripts['gl-quad'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLQuad.js', 'gl-quad');
+				scripts['gl-rect'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLRect.js', 'gl-rect');
+				scripts['gl-revolution'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLRevolution.js', 'gl-revolution');
+				scripts['gl-ring'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLRing.js', 'gl-ring');
+				scripts['gl-uv-ellipsoid'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLUVEllipsoid.js', 'gl-uv-ellipsoid');
+				scripts['gl-uv-sphere'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLUVSphere.js', 'gl-uv-sphere');
+				scripts['gl-ribbon-from-curve'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLRibbonFromCurve.js', 'gl-ribbon-from-curve');
+				scripts['gl-prism-from-curve'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLPrismFromCurve.js', 'gl-prism-from-curve');
+				scripts['gl-pipe-from-curve'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/items/primitives/GLPipeFromCurve.js', 'gl-pipe-from-curve');
+
+				scripts['fragment-bump'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/shaders/FragmentShaderBump.js', 'fragment-bump');
+				scripts['fragment-color'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/shaders/FragmentShaderColor.js', 'fragment-color');
+				scripts['fragment-color-ramp'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/shaders/FragmentShaderColorRamp.js', 'fragment-color-ramp');
+				scripts['fragment-init'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/shaders/FragmentShaderInit.js', 'fragment-init');
+				scripts['fragment-manga'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/shaders/FragmentShaderManga.js', 'fragment-manga');
+				scripts['fragment-modeling'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/shaders/FragmentShaderModeling.js', 'fragment-modeling');
+				scripts['fragment-material'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/shaders/FragmentShaderMaterial.js', 'fragment-material');
+				scripts['fragment-monochrome'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/shaders/FragmentShaderMonochrome.js', 'fragment-monochrome');
+				scripts['fragment-normals'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/shaders/FragmentShaderNormals.js', 'fragment-normals');
+				scripts['fragment-outline'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/shaders/FragmentShaderOutline.js', 'fragment-outline');
+				scripts['fragment-sobel-edge'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/shaders/FragmentShaderSobelEdge.js', 'fragment-sobel-edge');
+				scripts['vertex-color'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/shaders/VertexShaderColor.js', 'vertex-color');
+				scripts['vertex-init'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/shaders/VertexShaderInit.js', 'vertex-init');
+				scripts['vertex-material'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/shaders/VertexShaderMaterial.js', 'vertex-material');
+				scripts['vertex-normals'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/shaders/VertexShaderNormals.js', 'vertex-normals');
+				scripts['vertex-normals-texture'] = new ScriptLoader(root + 'PeguyJS/Graphics/Components/canvas3D/shaders/VertexShaderNormalsTexture.js', 'vertex-normals-texture');
+				
+			}
 		}
 		
 		loaded = false;
@@ -1099,6 +1126,8 @@ function Loader($root, $style)
 
 			components[key].load();
 		}
+
+		loadedOnce = true;
 	};
 
 	this.hasLoaded = function($name)
@@ -1178,6 +1207,16 @@ function Loader($root, $style)
 		if (scripts[$name] === null || scripts[$name] === undefined)
 			scripts[$name] = new ScriptLoader($url, $name);
 	};
+
+	// Pour retirer un script
+	this.removeScript = function($name)
+	{
+		if (scripts[$name] !== undefined && scripts[$name] !== null)
+		{
+			scripts[$name].remove();
+			delete scripts[$name];
+		}
+	};
 	
 	// Pour charger après coup un nouveau composent
 	this.useComponent = function($styleURL, $scriptURL, $name, $onLoad)
@@ -1212,7 +1251,10 @@ function Loader($root, $style)
 	this.addModule = function($module)
 	{
 		if (additionnalModules.indexOf($module) < 0)
+		{
 			additionnalModules.push($module);
+			loadedOnce = false;
+		}
 	};
 	
 	this.addModules = function($modules)
@@ -1222,6 +1264,8 @@ function Loader($root, $style)
 			if (additionnalModules.indexOf($modules[i]) < 0)
 				additionnalModules.push($modules[i]);
 		}
+
+		loadedOnce = false;
 	};
 	
 	this.removeModule = function($module)
@@ -1229,7 +1273,10 @@ function Loader($root, $style)
 		var index = additionnalModules.indexOf($module);
 		
 		if (index >= 0)
+		{
 			additionnalModules = additionnalModules.splice(index, 1);
+			loadedOnce = false;
+		}
 	};
 	
 	////////////////

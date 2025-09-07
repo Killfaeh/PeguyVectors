@@ -454,13 +454,16 @@ var Format =
 									|| ($config.imgSecureURL !== '' && src.match($config.imgSecureURL))
 									|| (imagesUploadModes.inlineData === true && /^data:image\/([0-9a-zA-Z]+);base64,/.test(src)))
 								{
-									result.setAttribute('src', nodeAttributes[i].value);
+									var url = nodeAttributes[i].value;
+									//url = url.replaceAll('&amp;', '%26').replaceAll('&', '%26') + '';
+									result.setAttribute('src', url);
 								}
 							}
 						}
 						else if (name === 'href')
 						{
 							var href = nodeAttributes[i].value;
+							//href = href.replaceAll('&amp;', '%26').replaceAll('&', '%26') + '';
 							
 							if (utils.isset(href) && href !== '' && utils.isset(DataFilter.url(href)))
 								result.setAttribute('src', nodeAttributes[i].value);
@@ -779,7 +782,9 @@ var Format =
 					{
 						if (utils.isset(DataFilter.url($node.getAttribute('href'))))
 						{
-							open = '[url=' + $node.getAttribute('href') + ']';
+							var href = $node.getAttribute('href');
+							//href = href.replaceAll('&amp;', '%26').replaceAll('&', '%26') + '';
+							open = '[url=' + href + ']';
 							close = '[/url]';
 						}
 					}
@@ -960,6 +965,7 @@ var Format =
 					if (tagName === 'img')
 					{
 						var src = $node.getAttribute('src');
+						//src = src.replaceAll('&amp;', '%26').replaceAll('&', '%26') + '';
 						
 						if (utils.isset(src) && src !== '' 
 							&& (utils.isset(DataFilter.url(src)) 
@@ -1286,6 +1292,7 @@ var Format =
 				for (var i = 0; i < matchLinks.length; i++)
 				{
 					var url = matchLinks[i].replace('[url]', '').replace('[/url]', '');
+					//url = url.replaceAll('&amp;', '%26').replaceAll('&', '%26') + '';
 					
 					//if (/^(https?|ftp|#):\/\/[^\s$.?#].[^\s]*$/.test(url))
 					if (utils.isset(DataFilter.url(url)))
@@ -1300,10 +1307,13 @@ var Format =
 				for (var i = 0; i < matchLinks.length; i++)
 				{
 					var url = matchLinks[i].replace(/\[url=(.*?)\](.*?)\[\/url\]/gi, '$1');
+					//url = url.replaceAll('&amp;', '%26').replaceAll('&', '%26') + '';
+					url = DataFilter.url(url);
+
 					var title = matchLinks[i].replace(/\[url=(.*?)\](.*?)\[\/url\]/gi, '$2');
-					
-					//if (/^(https?|ftp|#):\/\/[^\s$.?#].[^\s]*$/.test(url))
-					if (utils.isset(DataFilter.url(url)))
+					//title = title.replaceAll('&amp;', '%26').replaceAll('&', '%26') + '';
+
+					if (utils.isset(url))
 						result = result.replace(matchLinks[i], '<a href="' + url + '" title="' + title + '" >' + title + '</a>');
 				}
 			}
@@ -1332,6 +1342,7 @@ var Format =
 				for (var i = 0; i < matchImg.length; i++)
 				{
 					var url = matchImg[i].replace('[img]', '').replace('[/img]', '');
+					//url = url.replaceAll('&amp;', '%26').replaceAll('&', '%26') + '';
 					
 					//if (/^(https?|ftp|#):\/\/[^\s$.?#].[^\s]*$/.test(url))
 					if (utils.isset(url) && url !== '' 

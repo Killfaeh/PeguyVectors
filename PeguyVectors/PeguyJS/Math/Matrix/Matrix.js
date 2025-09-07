@@ -418,6 +418,41 @@ function Matrix()
 	// GET 
 	this.getMatrix = function() { return matrix; };
 	this.getTable = function() { return table; };
+
+	this.isIdentity = function()
+	{
+		var isIdentity = true;
+
+		if (utils.isset(matrix[0]) && matrix.length === matrix[0].length)
+		{
+			for (var i = 0; i < matrix.length; i++)
+			{
+				if (matrix.length === matrix[i].length)
+				{
+					for (var j = 0; j < matrix[i].length; j++)
+					{
+						if ((i === j && matrix[i][j] !== 1.0) || (i !== j && matrix[i][j] !== 0.0))
+						{
+							j = matrix[i].length;
+							isIdentity = false;
+						}
+					}
+
+					if (!isIdentity)
+						i = matrix.length;
+				}
+				else
+				{
+					i = matrix.length;
+					isIdentity = false;
+				}
+			}
+		}
+		else
+			isIdentity = false;
+
+		return isIdentity;
+	};
 	
 	this.clone = function()
 	{

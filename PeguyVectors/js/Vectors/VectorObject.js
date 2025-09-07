@@ -48,7 +48,13 @@ function VectorObject()
         if (transformCommand !== '')
             $svgObject.setAttributeNS(null, 'transform', transformCommand);
         
-        $svgObject.setAttributeNS(null, 'style', 'fill: ' + fillColor + '; stroke: ' + borderColor + '; stroke-width: ' + borderWidth + 'px;');
+        if (utils.isset(fillColor.getId))
+        {
+            $svgObject.setAttributeNS(null, 'style', 'fill: url(#gradient' + fillColor.getId() + '); stroke: ' + borderColor + '; stroke-width: ' + borderWidth + 'px;');
+            Doc.add(fillColor);
+        }
+        else
+            $svgObject.setAttributeNS(null, 'style', 'fill: ' + fillColor + '; stroke: ' + borderColor + '; stroke-width: ' + borderWidth + 'px;');
     };
 
     this.pathCode = function() { return ''; };

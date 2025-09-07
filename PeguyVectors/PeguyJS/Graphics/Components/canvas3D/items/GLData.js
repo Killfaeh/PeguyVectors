@@ -51,12 +51,13 @@ GLData =
 		return output;
 	},
 
-	createDiscData: function($radius, $angle, $radiusResolution, $thetaResolution)
+	createDiscData: function($radius, $angle, $radiusResolution, $thetaResolution, $deltaAngle)
 	{
 		var radius = $radius;
 		var angle = $angle;
 		var radiusResolution = $radiusResolution;
 		var thetaResolution = $thetaResolution;
+		var deltaAngle = $deltaAngle;
 
 		if (radius <= 0.0)
 			radius = 0.000001;
@@ -69,6 +70,14 @@ GLData =
 		
 		if (thetaResolution < 3)
 			thetaResolution = 3;
+
+		if (!utils.isset(deltaAngle))
+			deltaAngle = false;
+
+		var offsetAngle = 0.0;
+
+		if (deltaAngle === true)
+			offsetAngle = 0.5;
 		
 		var stepRadius = radius/radiusResolution;
 		var radAngle = angle/180.0*Math.PI;
@@ -116,6 +125,9 @@ GLData =
 			for (var j = 0; j < nbThetaStep; j++)
 			{
 				var tmpAngle = j*stepAngle;
+
+				if (deltaAngle === true)
+					tmpAngle = (j+0.5)*stepAngle;
 
 				var x = tmpRadius*Math.cos(tmpAngle);
 				var y = tmpRadius*Math.sin(tmpAngle);
@@ -494,7 +506,7 @@ GLData =
 		return output;
 	},
 
-	createPrismData: function($radius1, $radius2, $height, $angle, $deltaX, $deltaY, $thetaResolution, $heightResolution, $fill)
+	createPrismData: function($radius1, $radius2, $height, $angle, $deltaX, $deltaY, $thetaResolution, $heightResolution, $fill, $deltaAngle)
 	{
 		var radius1 = $radius1;
 		var radius2 = $radius2;
@@ -525,6 +537,16 @@ GLData =
 			heightResolution = 1;
 
 		var deltaRadius = radius2-radius1;
+
+		var deltaAngle = $deltaAngle;
+
+		if (!utils.isset(deltaAngle))
+			deltaAngle = false;
+
+		var offsetAngle = 0.0;
+
+		if (deltaAngle === true)
+			offsetAngle = 0.5;
 
 		var vertices = [];
 		var normals = [];
@@ -563,15 +585,15 @@ GLData =
 
 			for (var j = 0; j < nbThetaStep; j++)
 			{
-				var x1 = tmpRadius*Math.cos(j*stepAngle) + tmpDeltaX;
-				var y1 = tmpRadius*Math.sin(j*stepAngle) + tmpDeltaY;
-				var x2 = tmpRadius*Math.cos((j+1)*stepAngle) + tmpDeltaX;
-				var y2 = tmpRadius*Math.sin((j+1)*stepAngle) + tmpDeltaY;
+				var x1 = tmpRadius*Math.cos((j+offsetAngle)*stepAngle) + tmpDeltaX;
+				var y1 = tmpRadius*Math.sin((j+offsetAngle)*stepAngle) + tmpDeltaY;
+				var x2 = tmpRadius*Math.cos((j+1.0+offsetAngle)*stepAngle) + tmpDeltaX;
+				var y2 = tmpRadius*Math.sin((j+1.0+offsetAngle)*stepAngle) + tmpDeltaY;
 
-				var x1Bis = radiusBis*Math.cos(j*stepAngle) + tmpDeltaXBis;
-				var y1Bis = radiusBis*Math.sin(j*stepAngle) + tmpDeltaYBis;
-				var x2Bis = radiusBis*Math.cos((j+1)*stepAngle) + tmpDeltaXBis;
-				var y2Bis = radiusBis*Math.sin((j+1)*stepAngle) + tmpDeltaYBis;
+				var x1Bis = radiusBis*Math.cos((j+offsetAngle)*stepAngle) + tmpDeltaXBis;
+				var y1Bis = radiusBis*Math.sin((j+offsetAngle)*stepAngle) + tmpDeltaYBis;
+				var x2Bis = radiusBis*Math.cos((j+1.0+offsetAngle)*stepAngle) + tmpDeltaXBis;
+				var y2Bis = radiusBis*Math.sin((j+1.0+offsetAngle)*stepAngle) + tmpDeltaYBis;
 
 				vertices.push(x1);
 				vertices.push(y1);

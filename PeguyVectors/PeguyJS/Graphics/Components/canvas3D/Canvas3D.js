@@ -44,10 +44,29 @@ function Canvas3D($width, $height)
 	// Méthodes //
 	//////////////
 	
+	this.update = function()
+	{
+		for (var i = 0; i < instancesList.length; i++)
+		{
+			var type = instancesList[i].getType();
+
+			if (type === 'object')
+				instancesList[i] = new GLInstance(instancesList[i]);
+
+			//instancesList[i].setOutlineOffset(averageDirectionalLight);
+
+			instancesList[i].update(context);
+		}
+	};
+
 	// Peut être surchargée mais pas forcément
 	
 	this.render = function()
 	{
+		//console.log("RENDER SCENE : " + width + ", " + height);
+
+		NB_GL_VERTICES = 0;
+		NB_GL_TRIANGLES = 0;
 		COLLADA_MESH = {};
 		
 		// Tri des types de lumière
@@ -128,20 +147,11 @@ function Canvas3D($width, $height)
 		context.viewport(0, 0, width, height); // Définition du cadre
 		context.viewportWidth = width;
 		context.viewportHeight = height;
+		context.projMatrix = camera.getMatrix().clone().multiplyLeft(perspectiveMatrix);
 		context.clear(context.COLOR_BUFFER_BIT | context.DEPTH_BUFFER_BIT); // Réinitialisation de l'affichage
 
 		// Mise à jour des objets 
-		for (var i = 0; i < instancesList.length; i++)
-		{
-			var type = instancesList[i].getType();
-
-			if (type === 'object')
-				instancesList[i] = new GLInstance(instancesList[i]);
-
-			//instancesList[i].setOutlineOffset(averageDirectionalLight);
-
-			instancesList[i].update(context);
-		}
+		$this.update();
 
 		// Affichage des objets (il faudra ajouter un gestionnaire d'ordre d'affichage et ne pas envoyer à l'affichage ce qui n'apparait pas à l'écran)
 		
@@ -150,6 +160,12 @@ function Canvas3D($width, $height)
 			instancesList[i].setParamValue('uCameraPosition', [camera.getX(), camera.getY(), camera.getZ()]);
 			instancesList[i].render(context);
 			context.bindTexture(context.TEXTURE_2D, null);
+		}
+
+		for (var i = 0; i < instancesList.length; i++)
+		{
+			if (utils.isset(instancesList[i].reinitMoved))
+				instancesList[i].reinitMoved();
 		}
 
 		init = true;

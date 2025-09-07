@@ -8,10 +8,42 @@ function GLRibbonFromCurve($verticesList, $width, $axis, $cornerMode, $cornerAng
 
 	var verticesList = $verticesList;
 
-	var width = Math.abs($width);
+	var width = $width;
 
 	if (!utils.isset(width))
 		width = 0.1;
+
+	if (!Array.isArray(width))
+		width = Math.abs(width);
+	else
+	{
+		if (width.length < verticesList.length)
+        {
+            var lastWidth = width[width.length-1];
+
+            for (var i = width.length; i < verticesList.length; i++)
+                width.push(lastWidth);
+        }
+
+		var minWidth = 1000000000.0;
+		var maxWidth = -1000000000.0;
+
+		for (var i = 0; i < width.length; i++)
+		{
+			if (width[i] < minWidth)
+				minWidth = width[i];
+			else if (width[i] > maxWidth)
+				maxWidth = width[i];
+		}
+
+		for (var i = 0; i < width.length; i++)
+		{
+			width[i] = Math.abs(width[i] - minWidth);
+
+			if (width[i] < Math.pow(10, -PEGUY.glPrecision))
+				width[i] = Math.pow(10, -PEGUY.glPrecision);
+		}
+	}
 
 	var axis = $axis;
 
@@ -29,7 +61,7 @@ function GLRibbonFromCurve($verticesList, $width, $axis, $cornerMode, $cornerAng
 		cornerAngle = 0.0;
 
 	if (cornerAngle >= 180.0)
-		cornerAngle = 180.0-PEGUY.glPrecision;
+		cornerAngle = 180.0-Math.pow(10, -PEGUY.glPrecision);
 
 	var cornerResolution = $cornerResolution;
 
@@ -47,8 +79,6 @@ function GLRibbonFromCurve($verticesList, $width, $axis, $cornerMode, $cornerAng
 
 	var init = function()
 	{
-		console.log(verticesList);
-
 		var polygon = new MathPolygon(verticesList);
 
 		var bandData = $this.computeBandData(0.0);
@@ -448,14 +478,6 @@ function GLRibbonFromCurve($verticesList, $width, $axis, $cornerMode, $cornerAng
 				tangentsY.push(0.0);
 			}
 
-			/*
-			var textureX = verticesList[i].x/maxRadius;
-			var textureY = verticesList[i].y/maxRadius;
-
-			texture.push(0.5*textureX+0.5);
-			texture.push(0.5*textureY+0.5);
-			//*/
-
 			texture.push(0.0);
 			texture.push(0.0);
 
@@ -464,6 +486,8 @@ function GLRibbonFromCurve($verticesList, $width, $axis, $cornerMode, $cornerAng
 			colors.push(1.0);
 			colors.push(1.0);
 		}
+
+		//console.log(vertices);
 
 		var output = 
 		{ 
@@ -506,6 +530,10 @@ function GLRibbonFromCurve($verticesList, $width, $axis, $cornerMode, $cornerAng
 
 	this.computeVertices = function()
 	{
+		var prevWidth = width;
+		var curWidth = width;
+		var nextWidth = width;
+
 		var vertices1 = [];
         var vertices2 = [];
 		var angles = [];
@@ -515,10 +543,16 @@ function GLRibbonFromCurve($verticesList, $width, $axis, $cornerMode, $cornerAng
         {
             if (i === 0)
             {
+				if (Array.isArray(width))
+				{
+					curWidth = width[i];
+					nextWidth = width[i+1];
+				}
+
 				var vertex = verticesList[0].values();
 				var normal = Vectors.delta(verticesList[0], verticesList[1]).normal().values();
-                var vertex1 = new Vector([vertex[0]+normal[0]*width/2.0, vertex[1]+normal[1]*width/2.0, 0.0]);
-                var vertex2 = new Vector([vertex[0]-normal[0]*width/2.0, vertex[1]-normal[1]*width/2.0, 0.0]);
+                var vertex1 = new Vector([vertex[0]+normal[0]*curWidth/2.0, vertex[1]+normal[1]*curWidth/2.0, 0.0]);
+                var vertex2 = new Vector([vertex[0]-normal[0]*curWidth/2.0, vertex[1]-normal[1]*curWidth/2.0, 0.0]);
                 vertices1.push(vertex1);
                 vertices2.push(vertex2);
                 angles.push(360.0);
@@ -526,10 +560,16 @@ function GLRibbonFromCurve($verticesList, $width, $axis, $cornerMode, $cornerAng
             }
 			else if (i === verticesList.length-1)
             {
+				if (Array.isArray(width))
+				{
+					prevWidth = width[i-1];
+					curWidth = width[i];
+				}
+
 				var vertex = verticesList[verticesList.length-1].values();
 				var normal = Vectors.delta(verticesList[verticesList.length-2], verticesList[verticesList.length-1]).normal().values();
-                var vertex1 = new Vector([vertex[0]+normal[0]*width/2.0, vertex[1]+normal[1]*width/2.0, 0.0]);
-                var vertex2 = new Vector([vertex[0]-normal[0]*width/2.0, vertex[1]-normal[1]*width/2.0, 0.0]);
+                var vertex1 = new Vector([vertex[0]+normal[0]*curWidth/2.0, vertex[1]+normal[1]*curWidth/2.0, 0.0]);
+                var vertex2 = new Vector([vertex[0]-normal[0]*curWidth/2.0, vertex[1]-normal[1]*curWidth/2.0, 0.0]);
                 vertices1.push(vertex1);
                 vertices2.push(vertex2);
 				angles.push(360.0);
@@ -537,7 +577,14 @@ function GLRibbonFromCurve($verticesList, $width, $axis, $cornerMode, $cornerAng
             }
             else
             {
-                var join = getPathJoin(verticesList[i-1], verticesList[i], verticesList[i+1]);
+				if (Array.isArray(width))
+				{
+					prevWidth = width[i-1];
+					curWidth = width[i];
+					nextWidth = width[i+1];
+				}
+
+                var join = getPathJoin(verticesList[i-1], verticesList[i], verticesList[i+1], prevWidth, curWidth, nextWidth);
                 vertices1.push(join[0]);
                 vertices2.push(join[1]);
                 angles.push(join[2]);
@@ -547,7 +594,14 @@ function GLRibbonFromCurve($verticesList, $width, $axis, $cornerMode, $cornerAng
 
 		if (Vectors.equal(verticesList[0], verticesList[verticesList.length-1], Math.pow(10, -PEGUY.glPrecision)))
 		{
-			var join = getPathJoin(verticesList[verticesList.length-2], verticesList[0], verticesList[1]);
+			if (Array.isArray(width))
+			{
+				prevWidth = width[verticesList.length-2];
+				curWidth = width[0];
+				nextWidth = width[1];
+			}
+
+			var join = getPathJoin(verticesList[verticesList.length-2], verticesList[0], verticesList[1], prevWidth, curWidth, nextWidth);
 			vertices1[0] = join[0];
             vertices2[0] = join[1];
             angles[0] = join[2];
@@ -561,11 +615,20 @@ function GLRibbonFromCurve($verticesList, $width, $axis, $cornerMode, $cornerAng
 		return [vertices1, vertices2, angles, tmpVertices];
 	};
 
-	var getPathJoin = function($prevVertex, $vertex, $nextVertex)
+	var getPathJoin = function($prevVertex, $vertex, $nextVertex, $prevWidth, $width, $nextWidth)
     {
-		var vertex = $vertex.values();
-		var prevVertex = $prevVertex.values();
-		var nextVertex = $nextVertex.values();
+		var vertex = $vertex;
+		var prevVertex = $prevVertex;
+		var nextVertex = $nextVertex;
+
+		if (!Array.isArray(vertex))
+			vertex = vertex.values();
+
+		if (!Array.isArray(prevVertex))
+			prevVertex = prevVertex.values();
+
+		if (!Array.isArray(nextVertex))
+			nextVertex = nextVertex.values();
 
 		var prev = Vectors.delta($prevVertex, $vertex);
 		var next = Vectors.delta($vertex, $nextVertex);
@@ -577,29 +640,29 @@ function GLRibbonFromCurve($verticesList, $width, $axis, $cornerMode, $cornerAng
 		next = new Vector([next.x, next.y]);
 		var angle = Vectors.angle(next, prev.opposite());
 
-        var prevVertex1 = [Math.roundToDigit(prevVertex[0]+prevNormal[0]*width/2.0, PEGUY.glPrecision), 
-							Math.roundToDigit(prevVertex[1]+prevNormal[1]*width/2.0, PEGUY.glPrecision)];
+        var prevVertex1 = [Math.roundToDigit(prevVertex[0]+prevNormal[0]*$prevWidth/2.0, PEGUY.glPrecision), 
+							Math.roundToDigit(prevVertex[1]+prevNormal[1]*$prevWidth/2.0, PEGUY.glPrecision)];
 
-        var prevVertex2 = [Math.roundToDigit(prevVertex[0]-prevNormal[0]*width/2.0, PEGUY.glPrecision), 
-							Math.roundToDigit(prevVertex[1]-prevNormal[1]*width/2.0, PEGUY.glPrecision)];
+        var prevVertex2 = [Math.roundToDigit(prevVertex[0]-prevNormal[0]*$prevWidth/2.0, PEGUY.glPrecision), 
+							Math.roundToDigit(prevVertex[1]-prevNormal[1]*$prevWidth/2.0, PEGUY.glPrecision)];
 
-        var cur1Vertex1 = [Math.roundToDigit(vertex[0]+prevNormal[0]*width/2.0, PEGUY.glPrecision), 
-							Math.roundToDigit(vertex[1]+prevNormal[1]*width/2.0, PEGUY.glPrecision)];
+        var cur1Vertex1 = [Math.roundToDigit(vertex[0]+prevNormal[0]*$width/2.0, PEGUY.glPrecision), 
+							Math.roundToDigit(vertex[1]+prevNormal[1]*$width/2.0, PEGUY.glPrecision)];
 
-        var cur1Vertex2 = [Math.roundToDigit(vertex[0]-prevNormal[0]*width/2.0, PEGUY.glPrecision), 
-							Math.roundToDigit(vertex[1]-prevNormal[1]*width/2.0, PEGUY.glPrecision)];
+        var cur1Vertex2 = [Math.roundToDigit(vertex[0]-prevNormal[0]*$width/2.0, PEGUY.glPrecision), 
+							Math.roundToDigit(vertex[1]-prevNormal[1]*$width/2.0, PEGUY.glPrecision)];
 
-        var cur2Vertex1 = [Math.roundToDigit(vertex[0]+nextNormal[0]*width/2.0, PEGUY.glPrecision), 
-							Math.roundToDigit(vertex[1]+nextNormal[1]*width/2.0, PEGUY.glPrecision)];
+        var cur2Vertex1 = [Math.roundToDigit(vertex[0]+nextNormal[0]*$width/2.0, PEGUY.glPrecision), 
+							Math.roundToDigit(vertex[1]+nextNormal[1]*$width/2.0, PEGUY.glPrecision)];
 
-        var cur2Vertex2 = [Math.roundToDigit(vertex[0]-nextNormal[0]*width/2.0, PEGUY.glPrecision), 
-							Math.roundToDigit(vertex[1]-nextNormal[1]*width/2.0, PEGUY.glPrecision)];
+        var cur2Vertex2 = [Math.roundToDigit(vertex[0]-nextNormal[0]*$width/2.0, PEGUY.glPrecision), 
+							Math.roundToDigit(vertex[1]-nextNormal[1]*$width/2.0, PEGUY.glPrecision)];
 
-        var nextVertex1 = [Math.roundToDigit(nextVertex[0]+nextNormal[0]*width/2.0, PEGUY.glPrecision), 
-							Math.roundToDigit(nextVertex[1]+nextNormal[1]*width/2.0, PEGUY.glPrecision)];
+        var nextVertex1 = [Math.roundToDigit(nextVertex[0]+nextNormal[0]*$nextWidth/2.0, PEGUY.glPrecision), 
+							Math.roundToDigit(nextVertex[1]+nextNormal[1]*$nextWidth/2.0, PEGUY.glPrecision)];
 
-        var nextVertex2 = [Math.roundToDigit(nextVertex[0]-nextNormal[0]*width/2.0, PEGUY.glPrecision), 
-							Math.roundToDigit(nextVertex[1]-nextNormal[1]*width/2.0, PEGUY.glPrecision)];
+        var nextVertex2 = [Math.roundToDigit(nextVertex[0]-nextNormal[0]*$nextWidth/2.0, PEGUY.glPrecision), 
+							Math.roundToDigit(nextVertex[1]-nextNormal[1]*$nextWidth/2.0, PEGUY.glPrecision)];
 
         var prevF1 = new LinearFunction();
         prevF1.coefFromPoints([prevVertex1, cur1Vertex1]);
@@ -624,7 +687,9 @@ function GLRibbonFromCurve($verticesList, $width, $axis, $cornerMode, $cornerAng
 		vertex2[0] = parseFloat(parseFloat(vertex2[0]).toFixed(PEGUY.glPrecision));
 		vertex2[1] = parseFloat(parseFloat(vertex2[1]).toFixed(PEGUY.glPrecision));
 
-        return [new Vector(vertex1), new Vector(vertex2), angle, [[new Vector(cur1Vertex1), new Vector(cur2Vertex1)], [new Vector(cur1Vertex2), new Vector(cur2Vertex2)]]];
+		var output = [new Vector(vertex1), new Vector(vertex2), angle, [[new Vector(cur1Vertex1), new Vector(cur2Vertex1)], [new Vector(cur1Vertex2), new Vector(cur2Vertex2)]]];
+
+        return output;
     };
 
 	////////////////

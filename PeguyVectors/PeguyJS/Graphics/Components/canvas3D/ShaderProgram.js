@@ -30,10 +30,14 @@ function ShaderProgram()
 	
 	this.link = function($context)
 	{
+		//console.log("SHADERS : ");
+		//console.log(SHADERS);
 		var vertexShader = SHADERS[vertexShaderName];
 		var fragmentShader = SHADERS[fragmentShaderName];
 		
-		if (vertexShader.isCompile() === true && fragmentShader.isCompile() === true && link === false)
+		if (vertexShader.isCompile() === true 
+			&& fragmentShader.isCompile() === true 
+			&& link === false)
 		{
 			for (var name in vertexShader.getParam())
 				param[name] = vertexShader.getParam()[name];
@@ -66,6 +70,8 @@ function ShaderProgram()
 	
 	this.execute = function($context)
 	{
+		//console.log("SHADERS : ");
+		//console.log(SHADERS);
 		var vertexShader = SHADERS[vertexShaderName];
 		var fragmentShader = SHADERS[fragmentShaderName];
 		

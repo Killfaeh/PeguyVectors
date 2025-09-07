@@ -261,9 +261,7 @@ var DataFilter =
 	
 	url: function($data)
 	{
-		//if (typeof $data === "string" && /^(((https?|ftp|#):\/\/(w{3}\.)?)(?<!www)(\w+-?)*\.([a-z]{2,4}))$/.test($data))
-		//if (typeof $data === "string" && /^(https?|ftp|#):\/\/(w{3}\.)?/.test($data))
-		if (typeof $data === "string" && /^(ftp|http|https):\/\/[^ "]+$/.test($data))
+		if (typeof $data === "string" && /^(ftp|http|https):\/\/[^ "']+$/.test($data))
 			return $data;
 		else
 			return null;

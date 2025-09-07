@@ -210,9 +210,21 @@ function Tree($ordered)
 	this.removeElement = function($element)
 	{
 		var index = elementsList.indexOf($element);
+
+		if (index < 0)
+		{
+			for (var i = 0; i < elementsList.length; i++)
+			{
+				if (utils.isset(elementsList[i].removeElement))
+					elementsList[i].removeElement($element);
+			}
+		}
 		
-		if (index > -1)
+		while (index >= 0)
+		{
 			elementsList.splice(index, 1);
+			index = elementsList.indexOf($element);
+		}
 		
 		var parent = $element.parentNode;
 		

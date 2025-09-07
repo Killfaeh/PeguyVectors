@@ -34,6 +34,7 @@ function FreezeScreen($content)
 	this.setContent = function($content)
 	{
 		content = $content;
+		component.getById("freezeScreenContent").empty();
 		component.getById("freezeScreenContent").appendChild(component.stringToHtml(content));
 	};
 	

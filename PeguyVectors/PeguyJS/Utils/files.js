@@ -39,6 +39,7 @@ Files =
 				reader.name = file.name;
 				reader.type = file.type;
 				reader.path = file.path;
+				reader.file = file;
 				
 				reader.onload = function ($event)
 				{
@@ -47,11 +48,11 @@ Files =
 					var fileType = this.type;
 					var filePath = this.path;
 					
-					Files.ready.push({ name: fileName, path: filePath, type: fileType, data: fileData });
+					Files.ready.push({ name: fileName, path: filePath, type: fileType, data: fileData, file: this.file });
 					Files.onReady($callback);
 				};
 				
-				if (/^image/.test(file.type) || /^application\/pdf/.test(file.type))
+				if (/^image/.test(file.type) || /^audio/.test(file.type) || /^application\/pdf/.test(file.type))
 					reader.readAsDataURL(file);
 				else if (/^text/.test(file.type) || file.type === 'application/json')
 					reader.readAsText(file);

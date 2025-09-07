@@ -80,7 +80,8 @@ function Vector($values)
 			var z = values[2];
 			output[0] = Math.sqrt(x*x + y*y + z*z);
 			output[1] = Trigo.atan(y, x);
-			output[2] = Trigo.atan(z, output[0]);
+			//output[2] = Trigo.atan(z, output[0]);
+			output[2] = Trigo.atan(z, Math.sqrt(x*x + y*y));
 		}
 
 		return new Vector(output);
@@ -117,12 +118,32 @@ function Vector($values)
 		return new Vector(outputValues);
 	};
 
+	this.scale = function($scale)
+	{
+		var outputValues = [];
+
+		for (var i = 0; i < values.length; i++)
+			outputValues.push(values[i]*$scale);
+
+		return new Vector(outputValues);
+	};
+
 	this.changeReference = function($reference)
 	{
 		var outputValues = [];
 
 		for (var i = 0; i < $reference.length; i++)
 			outputValues[i] = Vectors.dotProduct($reference[i], $this);
+
+		return new Vector(outputValues);
+	};
+
+	this.round = function($precision)
+	{
+		var outputValues = [];
+
+		for (var i = 0; i < values.length; i++)
+			outputValues.push(parseFloat(parseFloat(values[i]).toFixed($precision)));
 
 		return new Vector(outputValues);
 	};
@@ -247,6 +268,19 @@ Vectors =
 {
 	equal: function($vector1, $vector2, $precision)
 	{
+		
+		var vector1 = $vector1;
+		var vector2 = $vector2;
+
+		console.log(vector1);
+		console.log(vector2);
+
+		if (Array.isArray(vector1))
+			vector1 = new Vector(vector1);
+
+		if (Array.isArray(vector2))
+			vector2 = new Vector(vector2);
+
 		var precision = $precision;
 
 		if (!utils.isset(precision))
@@ -254,14 +288,14 @@ Vectors =
 
 		var equal = true;
 
-		if ($vector1.size() === $vector2.size())
+		if (vector1.size() === vector2.size())
 		{
-			for (var i = 0; i < $vector1.values().length; i++)
+			for (var i = 0; i < vector1.values().length; i++)
 			{
-				if (Math.abs($vector2.values()[i] - $vector1.values()[i]) >= Math.abs(precision))
+				if (Math.abs(vector2.values()[i] - vector1.values()[i]) >= Math.abs(precision))
 				{
 					equal = false;
-					i = $vector1.values().length;
+					i = vector1.values().length;
 				}
 			}
 		}
@@ -273,14 +307,23 @@ Vectors =
 
 	distance: function($vector1, $vector2)
 	{
+		var vector1 = $vector1;
+		var vector2 = $vector2;
+
+		if (Array.isArray(vector1))
+			vector1 = new Vector(vector1);
+
+		if (Array.isArray(vector2))
+			vector2 = new Vector(vector2);
+
 		var dist = 0.0;
 
-		if ($vector1.size() === $vector2.size())
+		if (vector1.size() === vector2.size())
 		{
-			for (var i = 0; i < $vector1.values().length; i++)
+			for (var i = 0; i < vector1.values().length; i++)
 			{
-				var delta = $vector2.values()[i] - $vector1.values()[i];
-				dist = dist + delta+delta;
+				var delta = vector2.values()[i] - vector1.values()[i];
+				dist = dist + delta*delta;
 			}
 
 			dist = Math.sqrt(dist);
@@ -288,6 +331,7 @@ Vectors =
 		else
 		{
 			// Renvoyer une exception
+			console.log("Pas de calcul de la distance");
 		}
 
 		return dist;
@@ -295,12 +339,21 @@ Vectors =
 
 	delta: function($vector1, $vector2)
 	{
+		var vector1 = $vector1;
+		var vector2 = $vector2;
+
+		if (Array.isArray(vector1))
+			vector1 = new Vector(vector1);
+
+		if (Array.isArray(vector2))
+			vector2 = new Vector(vector2);
+
 		var deltas = [];
 
-		if ($vector1.size() === $vector2.size())
+		if (vector1.size() === vector2.size())
 		{
-			for (var i = 0; i < $vector1.values().length; i++)
-				deltas.push($vector2.values()[i] - $vector1.values()[i]);
+			for (var i = 0; i < vector1.values().length; i++)
+				deltas.push(vector2.values()[i] - vector1.values()[i]);
 		}
 		else
 		{
@@ -310,16 +363,72 @@ Vectors =
 		return new Vector(deltas);
 	},
 
+	sum: function($vectors)
+	{
+		var sum = [];
+
+		if ($vectors.length > 0)
+		{
+			var sameSize = true;
+
+			//console.log("Size : " + $vectors[0].size());
+
+			for (var i = 1; i < $vectors.length; i++)
+			{
+				//console.log("Size : " + $vectors[i].size());
+
+				if ($vectors[0].size() !== $vectors[i].size())
+				{
+					sameSize = false;
+					i = $vectors.length;
+				}
+			}
+
+			if (sameSize === true)
+			{
+				for (var i = 0; i < $vectors[0].size(); i++)
+					sum.push(0.0);
+
+				for (var i = 0; i < $vectors.length; i++)
+				{
+					for (var j = 0; j < $vectors[i].size(); j++)
+						sum[j] = sum[j] + $vectors[i].values()[j];
+				}
+			}
+			else
+			{
+				// Renvoyer une exception
+				console.log("Pas la même taille");
+				//Debug.callstack();
+			}
+		}
+		else
+		{
+			// Renvoyer une exception
+		}
+
+		return new Vector(sum);
+	},
+
 	angle: function($vector1, $vector2)
 	{
+		var vector1 = $vector1;
+		var vector2 = $vector2;
+
+		if (Array.isArray(vector1))
+			vector1 = new Vector(vector1);
+
+		if (Array.isArray(vector2))
+			vector2 = new Vector(vector2);
+
 		var angle = 0.0;
 
-		if ($vector1.size() === $vector2.size())
+		if (vector1.size() === vector2.size())
 		{
-			if ($vector1.size() > 2)
+			if (vector1.size() > 2)
 			{
-				var tangent1 = $vector1.normalize();
-				var tangent2 = $vector2.normalize();
+				var tangent1 = vector1.normalize();
+				var tangent2 = vector2.normalize();
 				var cross = Vectors.crossProduct(tangent1, tangent2);
 				var normal1 = Vectors.crossProduct(cross, tangent1);
 				var cos = Vectors.dotProduct(tangent1, tangent2);
@@ -328,8 +437,8 @@ Vectors =
 			}
 			else
 			{
-				var polar1 = $vector1.toPolar();
-				var polar2 = $vector2.toPolar();
+				var polar1 = vector1.toPolar();
+				var polar2 = vector2.toPolar();
 				angle = polar2.theta-polar1.theta;
 
 				if (angle > Math.PI)
@@ -348,22 +457,40 @@ Vectors =
 
 	dotProduct: function($vector1, $vector2)
 	{
+		var vector1 = $vector1;
+		var vector2 = $vector2;
+
+		if (Array.isArray(vector1))
+			vector1 = new Vector(vector1);
+
+		if (Array.isArray(vector2))
+			vector2 = new Vector(vector2);
+
 		var dot = 0.0;
 
-		for (var i = 0; i < Math.min($vector1.size(), $vector2.size()); i++)
-			dot = dot + $vector1.values()[i]*$vector2.values()[i];
+		for (var i = 0; i < Math.min(vector1.size(), vector2.size()); i++)
+			dot = dot + vector1.values()[i]*vector2.values()[i];
 
 		return dot;
 	},
 
 	crossProduct: function($vector1, $vector2)
 	{
+		var vector1 = $vector1;
+		var vector2 = $vector2;
+
+		if (Array.isArray(vector1))
+			vector1 = new Vector(vector1);
+
+		if (Array.isArray(vector2))
+			vector2 = new Vector(vector2);
+
 		// Envoyer une erreur si les vecteurs ont une taille différente de 2 ou 3
 
 		var output = [0.0, 0.0, 1.0];
 		
-		var vector1 = new Vector($vector1.values());
-		var vector2 = new Vector($vector2.values());
+		//var vector1 = new Vector($vector1.values());
+		//var vector2 = new Vector($vector2.values());
 
 		if (vector1.size() === 2)
 			vector1 = new Vector([$vector1.values()[0], $vector1.values()[1], 0.0]);
@@ -376,6 +503,262 @@ Vectors =
 		output[2] = vector1.values()[0]*vector2.values()[1] - vector1.values()[1]*vector2.values()[0];
 
 		return new Vector(output);
+	},
+
+	scale: function($input, $scale)
+	{
+		var input = $input;
+
+		if (Array.isArray($input))
+		{
+			if (Array.isArray($input[0]))
+			{
+				input = [];
+
+				for (var i = 0; i < $input.length; i++)
+					input.push(new Vector([$input[i][0], $input[i][1], $input[i][2]]));
+			}
+			else if (!utils.isset($input[0].type) || $input[0].type !== 'Vector')
+			{
+				input = new Vector([$input[0], $input[1], $input[2]]);
+			}
+		}
+
+		var output = input;
+
+		if (Array.isArray(input))
+		{
+			output = [];
+
+			for (var i = 0; i < input.length; i++)
+			{
+				var arrayOutput = [];
+				var tmpInput = input[i].values();
+
+				for (var j = 0; j < tmpInput.length; j++)
+					arrayOutput.push(tmpInput[j]*$scale);
+
+				output.push(new Vector(arrayOutput));
+			}
+		}
+		else
+		{
+			var arrayOutput = [];
+			var tmpInput = input[i].values();
+
+			for (var j = 0; j < tmpInput.length; j++)
+				arrayOutput.push(tmpInput[j]*$scale);
+
+			output = new Vector(arrayOutput);
+		}
+
+		return output;
+	},
+
+	changeReference: function($input, $reference)
+	{
+		var output = $input;
+
+		if ($reference.length > 0)
+		{
+			output = [];
+
+			for (var i = 0; i < $reference.length; i++)
+				output.push(Vectors.dotProduct($input, $reference[i]));
+
+			output = new Vector(output);
+		}
+
+		return output;
+	},
+
+	alignTo: function($input, $axis)
+	{
+		var input = $input;
+
+		if (Array.isArray($input))
+		{
+			if (Array.isArray($input[0]))
+			{
+				input = [];
+
+				for (var i = 0; i < $input.length; i++)
+					input.push(new Vector([$input[i][0], $input[i][1], $input[i][2]]));
+			}
+			else if (!utils.isset($input[0].type) || $input[0].type !== 'Vector')
+			{
+				input = new Vector([$input[0], $input[1], $input[2]]);
+			}
+		}
+
+		var output = input;
+
+		/*
+		console.log("ALIGN");
+		console.log(input);
+		//*/
+
+		var xAxis = new Vector([1.0, 0.0, 0.0]);
+		var yAxis = new Vector([0.0, 1.0, 0.0]);
+		var zAxis = new Vector([0.0, 0.0, 1.0]);
+
+		if (Array.isArray($axis))
+		{
+			xAxis = $axis[0];
+			yAxis = $axis[1];
+			zAxis = $axis[2];
+		}
+		else
+		{
+			var dotX = Vectors.dotProduct(xAxis, $axis);
+			var dotY = Vectors.dotProduct(yAxis, $axis);
+			var dotZ = Vectors.dotProduct(zAxis, $axis);
+
+			/*
+			var max = Math.max(dotX, dotY, dotZ, -dotX, -dotY, -dotZ);
+			var min = Math.min(dotX, dotY, dotZ, -dotX, -dotY, -dotZ);
+
+			zAxis = $axis;
+
+			if (max === dotX)
+			{
+				xAxis = Vectors.crossProduct(yAxis, zAxis).normalize();
+				yAxis = Vectors.crossProduct(zAxis, xAxis).normalize();
+			}
+			else if (max === -dotX)
+			{
+				xAxis = Vectors.crossProduct(yAxis.opposite(), zAxis).normalize();
+				xAxis = Vectors.crossProduct(yAxis, zAxis).normalize();
+				yAxis = Vectors.crossProduct(zAxis, xAxis).normalize();
+			}
+			else if (max === dotY)
+			{
+				yAxis = Vectors.crossProduct(zAxis, xAxis).normalize();
+				xAxis = Vectors.crossProduct(yAxis, zAxis).normalize();
+			}
+			else if (max === -dotY)
+			{
+				yAxis = Vectors.crossProduct(zAxis, xAxis.opposite()).normalize();
+				yAxis = Vectors.crossProduct(zAxis, xAxis).normalize();
+				xAxis = Vectors.crossProduct(yAxis, zAxis).normalize();
+			}
+			else if (max === dotZ)
+			{
+				xAxis = Vectors.crossProduct(yAxis, zAxis).normalize();
+				yAxis = Vectors.crossProduct(zAxis, xAxis).normalize();
+			}
+			else // -Z
+			{
+				xAxis = Vectors.crossProduct(yAxis.opposite(), zAxis).normalize();
+				xAxis = Vectors.crossProduct(yAxis, zAxis).normalize();
+				yAxis = Vectors.crossProduct(zAxis, xAxis).normalize();
+			}
+			//*/
+
+			if (dotX === 0.0 && dotZ === 0.0)
+			{
+
+			}
+			else
+			{
+				zAxis = $axis;
+				xAxis = Vectors.crossProduct(yAxis, zAxis).normalize();
+				yAxis = Vectors.crossProduct(zAxis, xAxis).normalize();
+
+				//*
+				if (dotX > 0.0)
+				{
+					xAxis = Vectors.crossProduct(yAxis.opposite(), zAxis.opposite()).normalize();
+					yAxis = Vectors.crossProduct(zAxis.opposite(), xAxis.opposite()).normalize();
+				}
+				//*/
+			}
+
+			/*
+			zAxis = $axis;
+
+			if (Array.isArray(zAxis))
+				zAxis = (new Vector(zAxis)).normalize();
+
+			//var dot = Vectors.dotProduct(new Vector([0.0, 1.0, 0.0]), zAxis);
+
+			xAxis = Vectors.crossProduct(new Vector([0.0, 1.0, 0.0]), zAxis).normalize();
+			//*/
+		}
+
+		/*
+		console.log("AXIS : ");
+		console.log(xAxis);
+		console.log(zAxis);
+		//*/
+
+		//if (xAxis.x > Math.pow(10, -PEGUY.glPrecision) || xAxis.y > Math.pow(10, -PEGUY.glPrecision) || xAxis.z > Math.pow(10, -PEGUY.glPrecision))
+		//if (Math.abs(xAxis.x) > 0.0 || Math.abs(xAxis.y) > 0.0 || Math.abs(xAxis.z) > 0.0)
+		{
+			/*
+			if (!Array.isArray($axis))
+			{
+				//var dot = Vectors.dotProduct(zAxis, xAxis);
+
+				yAxis = Vectors.crossProduct(zAxis, xAxis).normalize();
+
+				//console.log(yAxis);
+			}
+			//*/
+
+			//console.log(yAxis);
+
+			var matrix = new Matrix();
+
+			/*
+			matrix.setMatrix([
+				[xAxis.x, xAxis.y, xAxis.z, 0.0],
+				[yAxis.x, yAxis.y, yAxis.z, 0.0],
+				[zAxis.x, zAxis.y, zAxis.z, 0.0],
+				[0.0, 0.0, 0.0, 1.0]
+			]);
+			//*/
+
+			matrix.setMatrix([
+				[xAxis.x, xAxis.y, xAxis.z, 0.0],
+				[yAxis.x, yAxis.y, yAxis.z, 0.0],
+				[zAxis.x, zAxis.y, zAxis.z, 0.0],
+				[0.0, 0.0, 0.0, 1.0]
+			]);
+
+			if (Array.isArray(input))
+			{
+				output = [];
+
+				for (var i = 0; i < input.length; i++)
+				{
+					var input4 = input[i].values();
+
+					while (input4.length < 4)
+						input4.push(0.0);
+
+					var output4 = matrix.multiplyVect(input4);
+					output.push(new Vector([output4[0], output4[1], output4[2]]));
+				}
+			}
+			else
+			{
+				var input4 = input.values();
+
+				while (input4.length < 4)
+						input4.push(0.0);
+
+				var output4 = matrix.multiplyVect(input4);
+				output = new Vector([output4[0], output4[1], output4[2]]);
+			}
+		}
+
+		/*
+		console.log("OUTPUT ALIGN");
+		console.log(output);
+		//*/
+
+		return output;
 	},
 
 	segmentIntersection: function($segment1, $segment2)
@@ -395,14 +778,36 @@ Vectors =
 
 	vectorsDeterminant2D: function($vector1, $vector2)
 	{
-		var determinant = $vector1.values()[0]*$vector2.values()[1] - $vector1.values()[1]*$vector2.values()[0];
+		var vector1 = $vector1;
+		var vector2 = $vector2;
+
+		if (Array.isArray(vector1))
+			vector1 = new Vector(vector1);
+
+		if (Array.isArray(vector2))
+			vector2 = new Vector(vector2);
+
+		var determinant = vector1.values()[0]*vector2.values()[1] - vector1.values()[1]*vector2.values()[0];
 		return determinant;
 	},
 
 	pointsDeterminant2D: function($vertex1, $vertex2, $vertex3)
 	{
-		var vector1 = new Vector([$vertex2.values()[0] - $vertex1.values()[0], $vertex2.values()[1] - $vertex1.values()[1]]);
-		var vector2 = new Vector([$vertex3.values()[0] - $vertex1.values()[0], $vertex3.values()[1] - $vertex1.values()[1]]);
+		var vertex1 = $vertex1;
+		var vertex2 = $vertex2;
+		var vertex3 = $vertex3;
+
+		if (Array.isArray(vertex1))
+			vertex1 = new Vector(vertex1);
+
+		if (Array.isArray(vertex2))
+			vertex2 = new Vector(vertex2);
+
+		if (Array.isArray(vertex3))
+			vertex3 = new Vector(vertex3);
+
+		var vector1 = new Vector([vertex2.values()[0] - vertex1.values()[0], vertex2.values()[1] - vertex1.values()[1]]);
+		var vector2 = new Vector([vertex3.values()[0] - vertex1.values()[0], vertex3.values()[1] - vertex1.values()[1]]);
 		var determinant = Vectors.vectorsDeterminant2D(vector1, vector2);
 		return determinant;
 	},
@@ -509,6 +914,23 @@ Vectors =
 
 	getPerspectiveFromVertices: function($vertex1, $vertex2, $vertex3, $vertex4)
 	{
+		var vertex1 = $vertex1;
+		var vertex2 = $vertex2;
+		var vertex3 = $vertex3;
+		var vertex4 = $vertex4;
+
+		if (!Array.isArray(vertex1))
+			vertex1 = new Vector(vertex1);
+
+		if (!Array.isArray(vertex2))
+			vertex2 = new Vector(vertex2);
+
+		if (!Array.isArray(vertex3))
+			vertex3 = new Vector(vertex3);
+
+		if (!Array.isArray(vertex4))
+			vertex4 = new Vector(vertex4);
+
 		var persp = {};
 		
 		var x1 = $vertex1.x;

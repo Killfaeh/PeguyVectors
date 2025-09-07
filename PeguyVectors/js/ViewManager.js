@@ -158,7 +158,6 @@ function ViewManager()
 		tabManager.addTab(tab);
 		newDocument.setFilePath($filePath);
 		newDocument.setCode($code);
-		newDocument.centerView();
 		newDocument.setSaved(true);
 
 		activateMenu();
@@ -173,7 +172,7 @@ function ViewManager()
 				close = true;
 			else
 			{
-				var savePopup = new SavePopup('<p>The modifications of the file "' + tab.getContent().getFilePath() + '" have not been saved. Do you want save them before closing ? </p>');
+				var savePopup = new SavePopup('<p>The modifications of the project "' + tab.getContent().getFilePath() + '" have not been saved. Do you want save them before closing ? </p>');
 				document.getElementById('main').appendChild(savePopup);
 
 				savePopup.onDontSave = function()
@@ -205,6 +204,8 @@ function ViewManager()
 		};
 
 		tab.onSelect = function($tab) { $tab.getContent().restoreScroll(); };
+
+		newDocument.resize();
 	};
 
 	this.checkSavedFiles = function()
@@ -297,6 +298,14 @@ function ViewManager()
 		return success;
 	};
 
+	this.save = function()
+	{
+		var selectedTab = tabManager.getSelected();
+
+		if (utils.isset(selectedTab))
+			save(selectedTab);
+	};
+
 	var checkIfOpen = function($filePath)
 	{
 		var open = false;
@@ -348,29 +357,13 @@ function ViewManager()
 	this.updatePlugIns = function($plugIns)
 	{
 		for (var i = 0; i < $plugIns.plugIns.length; i++)
-		{
-			var script = utils.create("script", { "type": "text/javascript", "src": $plugIns.plugIns[i] });
-			document.getElementById('main').appendChild(script);
-		}
+			Loader.addScript($plugIns.plugIns[i], $plugIns.plugIns[i]);
+
+		Loader.onload = function() {};
+		Loader.load();
 	};
 
 	this.updateAssetManager = function($assets) { assetLibrary.loadAssetList($assets); };
-
-	this.displayError = function($error)
-	{
-		var selectedTab = tabManager.getSelected();
-
-		if (utils.isset(selectedTab))
-			selectedTab.getContent().displayError($error);
-	};
-
-	this.emptyError = function()
-	{
-		var selectedTab = tabManager.getSelected();
-
-		if (utils.isset(selectedTab))
-			selectedTab.getContent().emptyError();
-	};
 
 	this.render = function()
 	{
@@ -403,6 +396,22 @@ function ViewManager()
 		};
 	};
 
+	this.displayError = function($message, $source, $lineno, $colno, $error)
+	{
+		var selectedTab = tabManager.getSelected();
+
+		if (utils.isset(selectedTab))
+			selectedTab.getContent().displayError($message, $source, $lineno, $colno, $error);
+	};
+
+	this.emptyError = function()
+	{
+		var selectedTab = tabManager.getSelected();
+
+		if (utils.isset(selectedTab))
+			selectedTab.getContent().emptyError();
+	};
+
 	this.insertCode = function($codeToInsert)
 	{
 		var selectedTab = tabManager.getSelected();
@@ -420,7 +429,7 @@ function ViewManager()
 	itemNew.onAction = function()
 	{
 		//console.log("New");
-		createNewTab("New document", "", "");
+		createNewTab("New project", "", {});
 	};
 
 	itemOpenFile.onAction = async function()

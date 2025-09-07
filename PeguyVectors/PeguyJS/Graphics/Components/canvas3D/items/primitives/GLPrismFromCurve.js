@@ -13,7 +13,6 @@ function GLPrismFromCurve($radius1, $radius2, $width, $height, $deltaX, $deltaY,
 	
 	var radius1 = $radius1;
 	var radius2 = $radius2;
-	var width = Math.abs($width);
 	var height = $height;
 	var deltaX = $deltaX;
 	var deltaY = $deltaY;
@@ -24,6 +23,43 @@ function GLPrismFromCurve($radius1, $radius2, $width, $height, $deltaX, $deltaY,
 	var heightResolution = $heightResolution;
 	var bottomClosed = $bottomClosed;
 	var topClosed = $topClosed;
+
+	var width = $width;
+
+	if (!utils.isset(width))
+		width = 0.1;
+
+	if (!Array.isArray(width))
+		width = Math.abs(width);
+	else
+	{
+		if (width.length < verticesList.length)
+        {
+            var lastWidth = width[width.length-1];
+
+            for (var i = width.length; i < verticesList.length; i++)
+                width.push(lastWidth);
+        }
+
+		var minWidth = 1000000000.0;
+		var maxWidth = -1000000000.0;
+
+		for (var i = 0; i < width.length; i++)
+		{
+			if (width[i] < minWidth)
+				minWidth = width[i];
+			else if (width[i] > maxWidth)
+				maxWidth = width[i];
+		}
+
+		for (var i = 0; i < width.length; i++)
+		{
+			width[i] = Math.abs(width[i] - minWidth);
+
+			if (width[i] < Math.pow(10, -PEGUY.glPrecision))
+				width[i] = Math.pow(10, -PEGUY.glPrecision);
+		}
+	}
 	
 	var textureMode = 0;
 	// 0 : Même texture sur les 3 faces (texture en une partie) et texture entière sur chaque face

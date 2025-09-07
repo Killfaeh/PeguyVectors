@@ -50,7 +50,12 @@ function GLPrism($radius1, $radius2, $height, $angle, $deltaX, $deltaY, $thetaRe
 	
 	var init = function()
 	{
-		var prismData = GLData.createPrismData(radius1, radius2, height, angle, deltaX, deltaY, thetaResolution, heightResolution, fill);
+		var deltaAngle = false;
+
+		if (angle === 360.0)
+			deltaAngle = true;
+
+		var prismData = GLData.createPrismData(radius1, radius2, height, angle, deltaX, deltaY, thetaResolution, heightResolution, fill, deltaAngle);
 
 		glBuffer.setVertices(prismData.vertices);
 		glBuffer.setNormals(prismData.normals);
@@ -63,6 +68,10 @@ function GLPrism($radius1, $radius2, $height, $angle, $deltaX, $deltaY, $thetaRe
 		if (bottomClosed === true)
 		{
 			var disc1 = new GLDisc(radius1, angle, radiusResolution, thetaResolution);
+
+			if (angle === 360.0)
+				disc1.setDeltaAngle(true);
+
 			disc1.setX(-deltaX/2.0);
 			disc1.setY(-deltaY/2.0);
 			disc1.setZ(-height/2.0);
@@ -73,6 +82,10 @@ function GLPrism($radius1, $radius2, $height, $angle, $deltaX, $deltaY, $thetaRe
 		if (topClosed === true)
 		{
 			var disc2 = new GLDisc(radius2, angle, radiusResolution, thetaResolution);
+
+			if (angle === 360.0)
+				disc2.setDeltaAngle(true);
+
 			disc2.setX(deltaX/2.0);
 			disc2.setY(deltaY/2.0);
 			disc2.setZ(height/2.0);

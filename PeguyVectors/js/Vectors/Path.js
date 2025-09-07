@@ -4,10 +4,44 @@ function Path($operations)
 	// Attributs //
 	///////////////
 
-    var operations = $operations;
+    var operations = [];
 
-    if (!utils.isset(operations))
-        operations = [];
+    if (utils.isset($operations))
+    {
+        for (var i = 0; i < $operations.length; i++)
+        {
+            if (Array.isArray($operations[i]))
+                operations.push($operations[i]);
+            else
+            {
+                var subOperations = $operations[i].getOperations();
+
+                for (var j = 0; j < subOperations.length; j++)
+                {
+                    if (j === 0 && operations.length > 0)
+                    {
+                        var prevOperation = operations[operations.length-1];
+                        var prevPoint = subOperations[0][1];
+
+                        if (prevOperation[0] === 'Z')
+                            prevOperation = operations[operations.length-2];
+
+                        if (prevOperation[0] === 'L' || prevOperation[0] === 'A' || prevOperation[0] === 'Q' || prevOperation[0] === 'C')
+                            prevPoint = prevOperation[prevOperation.length-1];
+                        else if (prevOperation[0] === 'QT')
+                            prevPoint = prevOperation[2];
+                        else if (prevOperation[0] === 'CS')
+                            prevPoint = prevOperation[3];
+
+                        if (prevPoint[0] !== subOperations[0][1][0] || prevPoint[1] !== subOperations[0][1][1])
+                            operations.push(['L', subOperations[0][1]]);
+                    }
+                    else
+                        operations.push(subOperations[j]);
+                }
+            }
+        }
+    }
 
 	var vectorObject = new VectorObject();
 
@@ -122,6 +156,253 @@ function Path($operations)
         clone.border($this.getBorderColor(), $this.getBorderWidth());
 		return clone;
 	};
+
+    this.reverse = function()
+    {
+        var finishWithZ = false;
+        var mPoint = [0.0, 0.0];
+        var endPoint = [0.0, 0.0];
+
+        var endOperation = operations[operations.length-1];
+
+        if (endOperation[0] === 'Z')
+            endOperation = operations[operations.length-2];
+
+        //if (endOperation[0] === 'L' || endOperation[0] === 'H' || endOperation[0] === 'V' || endOperation[0] === 'Q' || endOperation[0] === 'C')
+        if (endOperation[0] === 'M' || endOperation[0] === 'L' || endOperation[0] === 'H' || endOperation[0] === 'V' 
+            || endOperation[0] === 'A' || endOperation[0] === 'Q' || endOperation[0] === 'C' 
+            || endOperation[0] === 'QT' || endOperation[0] === 'CS')
+        {
+            mPoint = endOperation[endOperation.length-1];
+            endPoint = endOperation[endOperation.length-1];
+        }
+        /*
+        else if (endOperation[0] === 'QT')
+        {
+            mPoint = endOperation[2];
+            endPoint = endOperation[2];
+        }
+        else if (endOperation[0] === 'CS')
+        {
+            mPoint = endOperation[3];
+            endPoint = endOperation[3];
+        }
+        //*/
+
+        var newOperations = [['M', mPoint]];
+
+        for (var i = operations.length-1; i >= 0; i--)
+        {
+            var opType = operations[i][0];
+
+            var nextOp = operations[i-1];
+
+            if (!utils.isset(nextOp))
+                nextOp = operations[0];
+
+            if (nextOp[0] === 'Z')
+                nextOp = operations[1];
+
+            if (opType === 'Z')
+                finishWithZ = true;
+            else
+            {
+                var operation = [opType];
+                endPoint = nextOp[nextOp.length-1];
+
+                if (opType === 'M' || opType === 'L' || opType === 'H' || opType === 'V')
+                    operation.push(endPoint);
+                else if (opType === 'Q')
+                {
+                    operation.push(operations[i][1]);
+                    operation.push(endPoint);
+                }
+                else if (opType === 'QT')
+                {
+                    var delta = Vectors.delta(new Vector(endPoint), new Vector(operations[i][1]));
+                    var handler = Vectors.sum([new Vector(operations[i][1]), delta]).values();
+                    operation.push(handler);
+                    operation.push(operations[i][2]);
+                    operation.push(endPoint);
+                }
+                else if (opType === 'C')
+                {
+                    operation.push(operations[i][2]);
+                    operation.push(operations[i][1]);
+                    operation.push(endPoint);
+                }
+                else if (opType === 'CS')
+                {
+                    var delta = Vectors.delta(new Vector(endPoint), new Vector(operations[i][2]));
+                    var handler = Vectors.sum([new Vector(operations[i][2]), delta]).values();
+                    operation.push(operations[i][4]);
+                    operation.push(handler);
+                    operation.push(operations[i][3]);
+                    operation.push(operations[i][1]);
+                    operation.push(endPoint);
+                }
+                else if (opType === 'A')
+                {
+                    operation.push(operations[i][1]);
+                    //operation.push(operations[i][2]);
+
+                    if (operations[i][2] === 0)
+                        operation.push(1);
+                    else
+                        operation.push(0);
+
+                    operation.push(operations[i][3]);
+                    operation.push(operations[i][4]);
+                    operation.push(endPoint);
+                }
+
+                newOperations.push(operation);
+            }
+        }
+
+        if (finishWithZ === true)
+            newOperations.push(['Z']);
+
+        var outputPath = new Path(newOperations);
+        outputPath.fill($this.getFillColor());
+        outputPath.border($this.getBorderColor(), $this.getBorderWidth());
+
+        return outputPath;
+    };
+
+    this.symetry = function($axis)
+    {
+        if (!utils.isset($axis))
+            $axis = 'y';
+
+        var newOperations = [];
+
+        for (var i = 0; i < operations.length; i++)
+        {
+            var operation = [];
+
+            for (var j = 0; j < operations[i].length; j++)
+            {
+                if (Array.isArray(operations[i][j]))
+                {
+                    var point = [0.0, 0.0];
+
+                    if ($axis === 'x')
+                    {
+                        point[0] = operations[i][j][0];
+                        point[1] = -operations[i][j][1];
+                    }
+                    else
+                    {
+                        point[0] = -operations[i][j][0];
+                        point[1] = operations[i][j][1];
+                    }
+
+                    operation.push(point);
+                }
+                else
+                    operation.push(operations[i][j]);
+            }
+
+            newOperations.push(operation);
+        }
+
+        var outputPath = new Path(newOperations);
+
+        var newFill = $this.getFillColor();
+
+        if (utils.isset(newFill.symetry))
+            newFill = newFill.symetry($axis);
+
+        outputPath.fill(newFill);
+        outputPath.border($this.getBorderColor(), $this.getBorderWidth());
+
+        return outputPath;
+    };
+
+    this.repeat = function($n)
+    {
+        var finishWithZ = false;
+
+        var startOffset = [0.0, 0.0];
+        var nextOffset = [0.0, 0.0];
+        
+        var newOperations = [];
+
+        var endOperation = operations[operations.length-1];
+
+        if (endOperation[0] === 'Z')
+        {
+            finishWithZ = true;
+            endOperation = operations[operations.length-2];
+        }
+
+        for (var i = 0; i < operations.length; i++)
+            newOperations.push(operations[i]);
+
+        startOffset = operations[0][1];
+        nextOffset = endOperation[endOperation.length-1];
+
+        for (var i = 1; i < $n; i++)
+        {
+            for (var j = 0; j < operations.length; j++)
+            {
+                var originalOp = operations[j];
+                var opType = originalOp[0];
+
+                if (opType !== 'Z')
+                {
+                    if (opType === 'M')
+                        opType = 'L';
+
+                    var operation = [opType];
+
+                    if (opType === 'L' || opType === 'H' || opType === 'V' || opType === 'Q' || opType === 'C' || opType === 'QT' || opType === 'CS')
+                    {
+                        for (var k = 1; k < originalOp.length; k++)
+                        {
+                            var point =
+                            [
+                                originalOp[k][0] - startOffset[0] + nextOffset[0],
+                                originalOp[k][1] - startOffset[1] + nextOffset[1]
+                            ];
+
+                            operation.push(point);
+                        }
+                    }
+                    else if (opType === 'A')
+                    {
+                        operation.push(originalOp[1]);
+                        operation.push(originalOp[2]);
+                        operation.push(originalOp[3]);
+                        operation.push(originalOp[4]);
+
+                        var point =
+                        [
+                            originalOp[5][0] - startOffset[0] + nextOffset[0],
+                            originalOp[5][1] - startOffset[1] + nextOffset[1]
+                        ];
+
+                        operation.push(point);
+                    }
+
+                    newOperations.push(operation);
+                }
+            }
+
+            //startOffset = nextOffset;
+            nextOffset = newOperations[newOperations.length-1][newOperations[newOperations.length-1].length-1];
+        }
+
+        if (finishWithZ === true)
+            newOperations.push(['Z']);
+
+        var outputPath = new Path(newOperations);
+        outputPath.fill($this.getFillColor());
+        outputPath.border($this.getBorderColor(), $this.getBorderWidth());
+
+        return outputPath;
+    };
 
     this.borderToPath = function($width)
     {

@@ -5,6 +5,7 @@ function ImagesManager()
 	///////////////
 
 	var popupHTML = '<h2>' + KEYWORDS.imagesLibrary + '</h2>'
+						+ '<div id="search-field" class="search-field" ></div>'
 						+ '<div id="images-list-block" class="images-list-block" >'
 							+ '<ul id="images-list" class="images-list" ></ul>'
 						+ '</div>'
@@ -29,14 +30,19 @@ function ImagesManager()
 	popup.getById('manageButtons').appendChild(addNewButton);
 	popup.getById('manageButtons').appendChild(editButton);
 	popup.getById('manageButtons').appendChild(deleteIcon);
+
+	var searchField = new InputSearch('text', '');
+	popup.getById('search-field').appendChild(searchField);
+
+	var withMetadata = false;
 	
 	var displayFreezeScreen = function() {};
 	var hideFreezeScreen = function() {};
 	
-	var getImagesListRequest = { url: '', method: 'GET', param: [], data: [], response: {id: 'id', url: 'url'} };
-	var uploadImageRequest = { url: '', method: 'POST', param: [], data: [], response: {id: 'id', url: 'url'} };
-	var editImageRequest = { url: '', method: 'POST', param: [], data: [], response: {id: 'id', url: 'url'} };
-	var deleteImageRequest = { url: '', method: 'POST', param: [], data: [], response: {id: 'id', url: 'url'} };
+	var getImagesListRequest = { url: '', method: 'GET', param: [], data: [], response: {id: 'id', url: 'url', title: 'title', keywords: 'keywords'} };
+	var uploadImageRequest = { url: '', method: 'POST', param: [], data: [], response: {id: 'id', url: 'url', title: 'title', keywords: 'keywords'} };
+	var editImageRequest = { url: '', method: 'POST', param: [], data: [], response: {id: 'id', url: 'url', title: 'title', keywords: 'keywords'} };
+	var deleteImageRequest = { url: '', method: 'POST', param: [], data: [], response: {id: 'id', url: 'url', title: 'title', keywords: 'keywords'} };
 	
 	var params = {};
 	var imagesList = [];
@@ -50,12 +56,24 @@ function ImagesManager()
 	// Méthodes //
 	//////////////
 	
-	var addImage = function($id, $url)
+	var addImage = function($id, $url, $title, $keywords)
 	{
+		var title = $title;
+		var keywords = $keywords;
+
+		if (!utils.isset(title))
+			title = '';
+
+		if (!utils.isset(keywords))
+			keywords = '';
+
 		var token = Math.ceil(Math.random()*10000);
 		
 		var itemHTML = '<li imgId="' + $id + '" >'
-							+ '<img id="img" src="' + $url + '?token=' + token + '" />'
+							+ '<div>'
+								+ '<img id="img" src="' + $url + '?token=' + token + '" /><br />'
+								+ '<span id="title" >' + $title + '</span>'
+							+ '</div>'
 							+ '<div id="magnifying-glass" class="magnifying-glass" ></div>'
 							+ '<div class="wall" ></div>'
 						+ '</li>';
@@ -88,7 +106,7 @@ function ImagesManager()
 		item.onMouseOut = function() { this.getById('magnifying-glass').style.display = 'none'; };
 		item.onClick = function() { $this.select(this); };
 		
-		imagesList.push({ id: $id, url: $url, item: item });
+		imagesList.push({ id: $id, url: $url, title: title, keywords: keywords, item: item });
 		
 		popup.getById('images-list').appendChild(item);
 		
@@ -164,7 +182,9 @@ function ImagesManager()
 				{
 					var id = $response[i][getImagesListRequest.response.id];
 					var url = $response[i][getImagesListRequest.response.url];
-					addImage(id, url);
+					var title = $response[i][getImagesListRequest.response.title];
+					var keywords = $response[i][getImagesListRequest.response.keywords];
+					addImage(id, url, title, keywords);
 				}
 			}
 			else
@@ -202,7 +222,7 @@ function ImagesManager()
 			{
 				if (utils.isset($response[getImagesListRequest.response.id]) && utils.isset($response[getImagesListRequest.response.url]))
 				{
-					var item = addImage($response[getImagesListRequest.response.id], $response[getImagesListRequest.response.url]);
+					var item = addImage($response[getImagesListRequest.response.id], $response[getImagesListRequest.response.url], $response[getImagesListRequest.response.title], $response[getImagesListRequest.response.keywords]);
 					$this.select(item);
 					uploadedUrls.push($response[getImagesListRequest.response.url]);
 				}
@@ -211,11 +231,11 @@ function ImagesManager()
 				
 				onImageUpload();
 				
-			}, { imgData: imagesToUpload[i] });
+			}, { imgData: imagesToUpload[i].data, title: imagesToUpload[i].title, keywords: imagesToUpload[i].keywords });
 		}
 	};
 	
-	this.editImage = function($id, $imgData)
+	this.editImage = function($id, $imgData, $title, $keywords)
 	{
 		sendRequest(editImageRequest, function($status, $response)
 		{
@@ -227,6 +247,9 @@ function ImagesManager()
 					{
 						var token = Math.ceil(Math.random()*10000);
 						imagesList[i].url = $response[getImagesListRequest.response.url];
+						imagesList[i].title = $response[getImagesListRequest.response.title];
+						imagesList[i].keywords = $response[getImagesListRequest.response.keywords];
+						imagesList[i].item.getById('title').innerHTML = $response[getImagesListRequest.response.title];
 						imagesList[i].item.getById('img').src = $response[getImagesListRequest.response.url] + '?token=' + token;
 						i = imagesList.length;
 					}
@@ -238,7 +261,7 @@ function ImagesManager()
 			if (utils.isset(hideFreezeScreen))
 				hideFreezeScreen();
 			
-		}, { id: $id, imgData: $imgData });
+		}, { id: $id, imgData: $imgData, title: $title, keywords: $keywords });
 	};
 	
 	this.deleteImage = function($id)
@@ -296,21 +319,147 @@ function ImagesManager()
 			}
 		}
 	};
+
+	var openMetadataPopup = function($popupTitle, $selected)
+	{
+		var metadataPopupHTML = '<h2>' + $popupTitle + '</h2>'
+
+								+ '<form id="form" target="iframe" method="post" enctype="multipart/form-data" style="" >'
+									+ '<p id="file-input" style="margin: 20px;" ></p>'
+									+ '<p style="margin: 20px;" ><input name="title-input" id="title-input" type="text" placeholder="' + KEYWORDS.title + '" /></p>'
+									+ '<p id="keywords" style="margin-top: 20px;" ></p>'
+									+ '<p style="" >' + KEYWORDS.separateKeywordsWithCommas + '</p>'
+									+ '<p style="margin-bottom: 20px;" ><input name="keyword-input" id="keyword-input" type="text" placeholder="" /></p>'
+								+ '</form>';
+
+		var metadataPopup = new ConfirmPopup(metadataPopupHTML);
+		metadataPopup.style.textAlign = 'center';
+
+		metadataPopup.onCancel = function() {};
+
+		metadataPopup.onOk = function()
+		{
+			var isOk = true;
+
+			var title = metadataPopup.getById('title-input').value;
+			var keywordsJSON = keywordsList.getJSON();
+			var keywordsStr = '';
+
+			for (var i = 0; i < keywordsJSON.length; i++)
+			{
+				if (i > 0)
+					keywordsStr = keywordsStr + ',';
+
+				keywordsStr = keywordsStr + keywordsJSON[i]["label"];
+			}
+
+			if (utils.isset($selected))
+				$this.editImage($selected.id, inputFile.getFileData(), title, keywordsStr);
+			else
+			{
+				var data = inputFile.getFileData();
+
+				if (utils.isset(data) && data !== '')
+					$this.uploadImages([{ data: data, title: title, keywords: keywordsStr }]);
+				else
+				{
+					var errorHTML = '<p class="error" >' + KEYWORDS.missingFile + '</p>';
+					var errorPopup = new InfoPopup(errorHTML);
+					document.getElementById('main').appendChild(errorPopup);
+					isOk = false;
+				}
+			}
+
+			return isOk;
+		};
+
+		var inputFile = new InputFile('image/*', '', KEYWORDS.chooseFile, 'imgFileEdit-' + popup.getId());
+		metadataPopup.getById('file-input').appendChild(inputFile);
+
+		var keywordsList = new LabelList();
+		metadataPopup.getById('keywords').appendChild(keywordsList);
+
+		var keywordOnChange = function()
+		{
+			var inputValue = metadataPopup.getById('keyword-input').value;
+
+			if (!/^,+$/.test(inputValue) && /.*,$/.test(inputValue))
+			{
+				var keyword = inputValue.replace(',', '').replace(/^ +/, '').replace(/ +$/, '').toLowerCase();
+				var label = new Label(keyword);
+				keywordsList.addLabel(label);
+				metadataPopup.getById('keyword-input').value = "";
+			}
+			else if (/^,+$/.test(inputValue))
+				metadataPopup.getById('keyword-input').value = "";
+		};
+
+		metadataPopup.getById('keyword-input').onchange = keywordOnChange;
+		metadataPopup.getById('keyword-input').addEvent('keydown', keywordOnChange);
+		metadataPopup.getById('keyword-input').addEvent('keyup', keywordOnChange);
+
+		if (utils.isset($selected))
+		{
+			setTimeout(function() { inputFile.updatePreview($selected.url) }, 100);
+
+			metadataPopup.getById('title-input').value = $selected.title;
+
+			var keywordsArray = $selected.keywords.replaceAll(/, +/ig, ',').split(',');
+			var keywordsJSON = [];
+
+			for (var i = 0; i < keywordsArray.length; i++)
+			{
+				if (keywordsArray[i] !== '')
+					keywordsJSON[i] = { "label": keywordsArray[i] };
+			}
+
+			keywordsList.loadFromJSON(keywordsJSON);
+		}
+
+		document.getElementById('main').appendChild(metadataPopup);
+	};
 	
 	///////////////////////////////////
 	// Initialisation des événements //
 	///////////////////////////////////
 	
 	this.onError = function($status, $response) {};
-	
-	addNewButton.onChange = function($value)
+
+	var onSearch = function($value)
 	{
-		if (utils.isset($value) && $value !== '')
+		popup.getById('images-list').empty();
+
+		for (var i = 0; i < imagesList.length; i++)
+		{
+			if (!utils.isset($value) || $value === '' 
+				|| (imagesList[i].id+'').toLowerCase().indexOf($value.toLowerCase()) >= 0 || imagesList[i].url.toLowerCase().indexOf($value.toLowerCase()) >= 0
+				 || imagesList[i].title.toLowerCase().indexOf($value.toLowerCase()) >= 0 || imagesList[i].keywords.toLowerCase().indexOf($value.toLowerCase()) >= 0)
+			{
+				popup.getById('images-list').appendChild(imagesList[i].item);
+			}
+		}
+	};
+
+	searchField.onSearch = function($value) { onSearch($value); };
+	searchField.onEmpty = function() { onSearch(null); };
+	
+	addNewButton.onClick = function($event)
+	{
+		if (withMetadata === true)
+		{
+			Events.preventDefault($event);
+			openMetadataPopup(KEYWORDS.addImage, null);
+		}
+	};
+
+	addNewButton.onChange = function($data)
+	{
+		if (utils.isset($data) && $data !== '')
 		{
 			var fileType = addNewButton.getFileType();
 			
 			if (/^image/.test(fileType))
-				$this.uploadImages([$value]);
+				$this.uploadImages([{ data: $data, title: '', keywords: '' }]);
 			else
 			{
 				var errorHTML = '<p class="error" >' + KEYWORDS.errorNotImage + '</p>';
@@ -321,6 +470,15 @@ function ImagesManager()
 		
 		addNewButton.clear();
 	};
+
+	editButton.onClick = function($event)
+	{
+		if (withMetadata === true)
+		{
+			Events.preventDefault($event);
+			openMetadataPopup(KEYWORDS.editImage, selected);
+		}
+	};
 	
 	editButton.onChange = function($value)
 	{
@@ -329,7 +487,7 @@ function ImagesManager()
 			var fileType = editButton.getFileType();
 			
 			if (/^image/.test(fileType))
-				$this.editImage(selected.id, $value);
+				$this.editImage(selected.id, $value, '', '');
 			else
 			{
 				var errorHTML = '<p class="error" >' + KEYWORDS.errorNotImage + '</p>';
@@ -401,22 +559,24 @@ function ImagesManager()
 				var file = filesToSend[i];
 				
 				reader = new FileReader();
+				reader.name = file.name;
 				
 				reader.onload = function ($event)
 				{
+					var fileName = this.name;
 					var fileData = $event.target.result;
 					
 					if (/data:image\/svg\+xml;base64,/.test(fileData))
 					{
 						dataManager.svgDataToPNG(fileData, function($pngData)
 						{
-							dataToSend.push($pngData);
+							dataToSend.push({ data: $pngData, title: fileName, keywords: ''});
 							onReady();
 						});
 					}
 					else
 					{
-						dataToSend.push(fileData);
+						dataToSend.push({ data: fileData, title: fileName, keywords: ''});
 						onReady();
 					}
 				};
@@ -444,6 +604,7 @@ function ImagesManager()
 	
 	// GET
 	
+	this.getWithMetadata = function() { return withMetadata; };
 	this.getDisplayFreezeScreen = function() { return displayFreezeScreen; };
 	this.getHideFreezeScreen = function() { return hideFreezeScreen; };
 	
@@ -468,6 +629,25 @@ function ImagesManager()
 	
 	// SET
 	
+	this.setSearchMode = function($searchMode)
+	{
+		if ($searchMode === true)
+		{
+			popup.getById('search-field').style.display = 'block';
+
+			if (Loader.getMode() === 'mobile')
+				popup.getById('images-list-block').style.top = '85px';
+			else
+				popup.getById('images-list-block').style.top = '125px';
+		}
+		else
+		{
+			popup.getById('search-field').removeAttribute('style');
+			popup.getById('images-list-block').removeAttribute('style');
+		}
+	};
+
+	this.setWithMetadata = function($withMetadata) { withMetadata = $withMetadata; };
 	this.setDisplayFreezeScreen = function($displayFreezeScreen) { displayFreezeScreen = $displayFreezeScreen; };
 	this.setHideFreezeScreen = function($hideFreezeScreen) { hideFreezeScreen = $hideFreezeScreen; };
 	

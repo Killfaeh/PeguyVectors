@@ -46,14 +46,15 @@ function ContentEditable()
 	
 	var imagesLibraryConfig = 
 	{
+		searchMode: false, withMetadata: false,
 		params: {},
 		displayFreezeScreen: function() {},
 		hideFreezeScreen: function() {},
 		onError: function(status, $response) {},
-		getImagesListRequest: { url: '', method: 'GET', param: [], data: [], response: {id: 'id', url: 'url'} },
-		uploadImageRequest: { url: '', method: 'POST', param: [], data: [], response: {id: 'id', url: 'url'} },
-		editImageRequest: { url: '', method: 'POST', param: [], data: [], response: {id: 'id', url: 'url'} },
-		deleteImageRequest: { url: '', method: 'POST', param: [], data: [], response: {id: 'id', url: 'url'} }
+		getImagesListRequest: { url: '', method: 'GET', param: [], data: [], response: {id: 'id', url: 'url', title: 'title', keywords: 'keywords'} },
+		uploadImageRequest: { url: '', method: 'POST', param: [], data: [], response: {id: 'id', url: 'url', title: 'title', keywords: 'keywords'} },
+		editImageRequest: { url: '', method: 'POST', param: [], data: [], response: {id: 'id', url: 'url', title: 'title', keywords: 'keywords'} },
+		deleteImageRequest: { url: '', method: 'POST', param: [], data: [], response: {id: 'id', url: 'url', title: 'title', keywords: 'keywords'} }
 	};
 	
 	var imgSecureURL = '';
@@ -1759,6 +1760,7 @@ function ContentEditable()
 			{
 				var isOk = true;
 				var url = popup.getById('url-input').value;
+				//url = url.replaceAll('&amp;', '%26').replaceAll('&', '%26') + '';
 				
 				if (utils.isset(DataFilter.url(url)))
 				{
@@ -1855,6 +1857,8 @@ function ContentEditable()
 	{
 		var imagesLibrary = new ImagesManager();
 		
+		imagesLibrary.setSearchMode(imagesLibraryConfig.searchMode);
+		imagesLibrary.setWithMetadata(imagesLibraryConfig.withMetadata);
 		imagesLibrary.setParams(imagesLibraryConfig.params);
 		
 		imagesLibrary.setDisplayFreezeScreen(imagesLibraryConfig.displayFreezeScreen);

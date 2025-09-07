@@ -31,8 +31,14 @@ function GLGroup()
 	var scaleY = 1.0;
 	var scaleZ = 1.0;
 
+	var alignMatrix = new Matrix();
+	alignMatrix.identity();
+
 	var mvMatrix = null;
 	var moved = false;
+
+	var boundingBox = null;
+	var displayWithNoCheck = false;
 	
 	//////////////
 	// Méthodes //
@@ -44,15 +50,92 @@ function GLGroup()
 			instancesList[i].linkShaders($context);
 	};
 
+	this.init = function($context) {};
+
+	this.updateBoundingBox = function()
+	{
+		var tmpMove = moved;
+		var parentGroups = [];
+		var parentGroup = $this.parentGroup;
+
+		while (utils.isset(parentGroup))
+		{
+			if (parentGroup.isMoved() === true)
+			{
+				parentGroups.push(parentGroup);
+				tmpMove = true;
+			}
+
+			parentGroup = parentGroup.parentGroup;
+		}
+
+		if (!utils.isset(boundingBox) || moved === true)
+		{
+			boundingBox = 
+			{
+				minX: 1000000000.0, minY: 1000000000.0, minZ: 1000000000.0,
+				maxX: -1000000000.0, maxY: -1000000000.0, maxZ: -1000000000.0,
+				widthX: 0.0, widthY: 0.0, widthZ: 0.0,
+				centerX: 0.0, centerY: 0.0, centerZ: 0.0,
+				radiusX: 0.0, radiusY: 0.0, radiusZ: 0.0,
+				radius: 0.0, weight: 0.0, diag: 0.0
+			};
+
+			for (var i = 0; i < instancesList.length; i++)
+			{
+				var subBoundingBox = instancesList[i].getBoundingBox();
+
+				if (subBoundingBox.minX < boundingBox.minX)
+					boundingBox.minX = subBoundingBox.minX;
+						
+				if (subBoundingBox.maxX > boundingBox.maxX)
+					boundingBox.maxX = subBoundingBox.maxX;
+
+				if (subBoundingBox.minY < boundingBox.minY)
+					boundingBox.minY = subBoundingBox.minY;
+						
+				if (subBoundingBox.maxY > boundingBox.maxY)
+					boundingBox.maxY = subBoundingBox.maxY;
+
+				if (subBoundingBox.minZ < boundingBox.minZ)
+					boundingBox.minZ = subBoundingBox.minZ;
+						
+				if (subBoundingBox.maxZ > boundingBox.maxZ)
+					boundingBox.maxZ = subBoundingBox.maxZ;
+			}
+
+			boundingBox.widthX = boundingBox.maxX - boundingBox.minX;
+			boundingBox.widthY = boundingBox.maxY - boundingBox.minY;
+			boundingBox.widthZ = boundingBox.maxZ - boundingBox.minZ;
+			boundingBox.diag = Math.sqrt(boundingBox.widthX*boundingBox.widthX + boundingBox.widthY*boundingBox.widthY + boundingBox.widthZ*boundingBox.widthZ);
+
+			// Imprécis mais rapide à calculer
+			boundingBox.radius = boundingBox.diag/2.0;
+			boundingBox.radiusX = Math.sqrt(boundingBox.widthY*boundingBox.widthY + boundingBox.widthZ*boundingBox.widthZ)/2.0;
+			boundingBox.radiusY = Math.sqrt(boundingBox.widthX*boundingBox.widthX + boundingBox.widthZ*boundingBox.widthZ)/2.0;
+			boundingBox.radiusZ = Math.sqrt(boundingBox.widthX*boundingBox.widthX + boundingBox.widthY*boundingBox.widthY)/2.0;
+			boundingBox.centerX = (boundingBox.maxX - boundingBox.minX)/2.0;
+			boundingBox.centerY = (boundingBox.maxY - boundingBox.minY)/2.0;
+			boundingBox.centerZ = (boundingBox.maxZ - boundingBox.minZ)/2.0;
+
+			boundingBox.vertices = 
+			[
+				[boundingBox.minX, boundingBox.minY, boundingBox.minZ, 1.0],
+				[boundingBox.minX, -boundingBox.minY, boundingBox.minZ, 1.0],
+				[-boundingBox.minX, -boundingBox.minY, boundingBox.minZ, 1.0],
+				[-boundingBox.minX, boundingBox.minY, boundingBox.minZ, 1.0],
+				[boundingBox.minX, boundingBox.minY, -boundingBox.minZ, 1.0],
+				[boundingBox.minX, -boundingBox.minY, -boundingBox.minZ, 1.0],
+				[-boundingBox.minX, -boundingBox.minY, -boundingBox.minZ, 1.0],
+				[-boundingBox.minX, boundingBox.minY, -boundingBox.minZ, 1.0]
+			];
+		}
+	};
+
 	this.update = function($context)
 	{
-		for (var i = 0; i < instancesList.length; i++)
-			instancesList[i].update($context);
-	};
-	
-	this.render = function($context)
-	{
-		// Mise à jour des objets 
+		$this.init($context);
+
 		for (var i = 0; i < instancesList.length; i++)
 		{
 			var type = instancesList[i].getType();
@@ -63,19 +146,102 @@ function GLGroup()
 				instancesList[i].parentGroup = $this;
 			}
 
-			//instancesList[i].setOutlineOffset(averageDirectionalLight);
-
 			instancesList[i].update($context);
 		}
 
-		// Affichage des objets (il faudra ajouter un gestionnaire d'ordre d'affichage et ne pas envoyer à l'affichage ce qui n'apparait pas à l'écran)
-		
-		for (var i = 0; i < instancesList.length; i++)
+		$this.updateBoundingBox();
+	};
+	
+	this.render = function($context)
+	{
+		var displayed = true;
+
+		//*
+		if (displayWithNoCheck === false)
 		{
-			instancesList[i].render($context);
-			$context.bindTexture($context.TEXTURE_2D, null);
+			var camera = $context.camera;
+			var deltaX = boundingBox.centerX-camera.getX();
+			var deltaY = boundingBox.centerY-camera.getY();
+			var deltaZ = boundingBox.centerZ-camera.getZ();
+			var dist = Math.sqrt(deltaX*deltaX + deltaY*deltaY + deltaZ*deltaZ);
+
+			var testProjection = function()
+			{
+				var projBoundingBox =
+				{
+					minX: 1000000000.0, minY: 1000000000.0, maxX: -1000000000.0, maxY: -1000000000.0,
+					widthX: 0.0, widthY: 0.0, centerX: 0.0, centerY: 0.0
+				};
+
+				for (var i = 0; i < boundingBox.vertices.length; i++)
+				{
+					var projVertex = $context.projMatrix.multiplyVect(boundingBox.vertices[i]);
+
+					if (projVertex[0] < projBoundingBox.minX)
+						projBoundingBox.minX = projVertex[0];
+
+					if (projVertex[0] > projBoundingBox.maxX)
+						projBoundingBox.maxX = projVertex[0];
+
+					if (projVertex[1] < projBoundingBox.minY)
+						projBoundingBox.minY = projVertex[1];
+
+					if (projVertex[1] > projBoundingBox.maxY)
+						projBoundingBox.maxY = projVertex[1];
+				}
+
+				projBoundingBox.widthX = projBoundingBox.maxX - projBoundingBox.minX;
+				projBoundingBox.widthY = projBoundingBox.maxY - projBoundingBox.minY;
+				projBoundingBox.centerX = (projBoundingBox.maxX + projBoundingBox.minX)/2.0;
+				projBoundingBox.centerY = (projBoundingBox.maxY + projBoundingBox.minY)/2.0;
+
+				if (Math.abs(projBoundingBox.centerX) <= projBoundingBox.widthX/2.0 + 1.0 && Math.abs(projBoundingBox.centerY) <= projBoundingBox.widthY/2.0 + 1.0)
+				{
+					displayed = true;
+
+					if (Math.abs(projBoundingBox.centerX) <=  1.0 - projBoundingBox.widthX/2.0 && Math.abs(projBoundingBox.centerY) <= 1.0 - projBoundingBox.widthY/2.0)
+						$this.displayWithNoCheck(true);
+				}
+				else
+					displayed = false;
+			};
+
+			if (dist < boundingBox.radius)
+			{
+				displayed = true;
+				$this.displayWithNoCheck(true);
+			}
+			else
+			{
+				var dotCamera = Vectors.dotProduct(new Vector([deltaX, deltaY, deltaZ]), camera.getViewVector());
+
+				if (dotCamera > 0.0)
+					testProjection();
+				else
+				{
+					var distToPlane = camera.getPlane().getDistance(new Vector([boundingBox.centerX, boundingBox.centerY, boundingBox.centerZ]));
+
+					if (distToPlane <= dist)
+						testProjection();
+					else
+						displayed = false;
+				}
+			}
+		}
+		//*/
+
+		if (displayed)
+		{
+			// Affichage des objets (il faudra ajouter un gestionnaire d'ordre d'affichage)
+			
+			for (var i = 0; i < instancesList.length; i++)
+			{
+				instancesList[i].render($context);
+				$context.bindTexture($context.TEXTURE_2D, null);
+			}
 		}
 
+		displayWithNoCheck = false;
 		init = true;
 	};
 	
@@ -86,7 +252,7 @@ function GLGroup()
 	// GET
 
 	this.getType = function() { return type; };
-	this.getObject = function() { return object; };
+	this.getInstancesList = function() { return instancesList; };
 
 	this.getX = function() { return x; };
 	this.getY = function() { return y; };
@@ -99,6 +265,8 @@ function GLGroup()
 	this.getScaleX = function() { return scaleX; };
 	this.getScaleY = function() { return scaleY; };
 	this.getScaleZ = function() { return scaleZ; };
+
+	this.getAlignMatrix = function() { return alignMatrix; };
 
 	this.isMoved = function() { return moved; };
 
@@ -137,6 +305,9 @@ function GLGroup()
 			mvMatrix.multiplyLeft(scaleMatrix);
 		}
 
+		if (!alignMatrix.isIdentity())
+			mvMatrix.multiplyLeft(alignMatrix);
+
 		return mvMatrix;
 	};
 
@@ -164,9 +335,12 @@ function GLGroup()
 		mvMatrix.multiplyLeft(rotateMatrixPhi);
 		mvMatrix.multiplyLeft(rotateMatrixOmega);
 		mvMatrix.multiplyLeft(scaleMatrix);
+		mvMatrix.multiplyLeft(alignMatrix);
 
 		return mvMatrix;
 	};
+
+	this.getBoundingBox = function() { return boundingBox; };
 
 	this.getRawData = function()
 	{
@@ -221,8 +395,8 @@ function GLGroup()
 			offsetIndex = offsetIndex + instanceRawData.v.length/3;
 		}
 
-		console.log("Group : ");
-		console.log(rawData);
+		//console.log("Group : ");
+		//console.log(rawData);
 
 		return rawData;
 	};
@@ -235,7 +409,7 @@ function GLGroup()
 		{
 			var colladaInstanceSubList = instancesList[i].getCOLLADAdata();
 
-			console.log(colladaInstanceSubList);
+			//console.log(colladaInstanceSubList);
 
 			for (var j = 0; j < colladaInstanceSubList.length; j++)
 			{
@@ -318,6 +492,15 @@ function GLGroup()
 		moved = true;
 	};
 
+	this.setAlignMatrix = function($alignMatrix)
+	{
+		alignMatrix = $alignMatrix;
+		alignMatrix.setItemMatrix(0, 3, 0.0);
+		alignMatrix.setItemMatrix(1, 3, 0.0);
+		alignMatrix.setItemMatrix(2, 3, 0.0);
+		moved = true;
+	};
+
 	this.setMoved = function($moved) { moved = $moved; };
 
 	this.reinitMoved = function()
@@ -326,6 +509,17 @@ function GLGroup()
 		
 		for (var i = 0; i < instancesList.length; i++)
 			instancesList[i].reinitMoved();
+	};
+
+	this.displayWithNoCheck = function($displayWithNoCheck)
+	{
+		displayWithNoCheck = $displayWithNoCheck;
+
+		for (var i = 0; i < instancesList.length; i++)
+		{
+			if (utils.isset(instancesList[i].displayWithNoCheck))
+				instancesList[i].displayWithNoCheck($displayWithNoCheck);
+		}
 	};
 
 	this.setParamValue = function($name, $value)
@@ -348,6 +542,7 @@ function GLGroup()
 		{
 			instancesList.push($instance);
 			$instance.parentGroup = $this;
+			moved = true;
 		}
 	};
 	
@@ -359,6 +554,7 @@ function GLGroup()
 		{
 			instancesList.splice(index, 1);
 			$instance.parentGroup = null;
+			moved = true;
 		}
 	};
 	
@@ -368,6 +564,7 @@ function GLGroup()
 			instancesList[i].parentGroup = null;
 
 		instancesList = [];
+		moved = true;
 	};
 
 	var $this = this;

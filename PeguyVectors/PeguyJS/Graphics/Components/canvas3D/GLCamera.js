@@ -28,7 +28,7 @@ function GLCamera()
 	var y = 0.0;
 	var z = 0.0;
 	
-	// Sens des éguilles d'une montre
+	// Sens des aiguilles d'une montre
 	// Par défaut, regarde le long des y positifs
 	var theta = 0.0; // Positif regarde vers la droite
 	var phi = 0.0; // Positif regarde vers le bas
@@ -36,6 +36,9 @@ function GLCamera()
 	
 	var matrix = new Matrix();
 	matrix.identity();
+
+	var viewVector = new Vector([1.0, 0.0, 0.0, 1.0]);
+	var plane = new MathPlane();
 	
 	//////////////
 	// Méthodes //
@@ -57,6 +60,14 @@ function GLCamera()
 		matrix.multiplyLeft(rotateMatrixTheta);
 		matrix.multiplyLeft(rotateMatrixOmega);
 		matrix.multiplyLeft(translateMatrix);
+
+		var cosTheta = Math.cos(theta);
+		var sinTheta = Math.cos(theta);
+		var cosPhi = Math.cos(phi);
+		var sinPhi = Math.cos(phi);
+
+		viewVector = new Vector([ cosTheta*cosPhi, sinTheta*cosPhi, sinPhi ]);
+		plane.computeFromNormal(viewVector, new Vector([x, y, z]));
 	};
 	
 	this.clone = function()
@@ -84,6 +95,9 @@ function GLCamera()
 	this.getTheta = function() { return theta; };
 	this.getPhi = function() { return phi; };
 	this.getOmega = function() { return omega; };
+
+	this.getViewVector = function() { return viewVector; };
+	this.getPlane = function() { return plane; };
 	
 	this.getPolar = function($offsetX, $offsetY, $offsetZ)
 	{
