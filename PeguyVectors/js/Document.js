@@ -224,13 +224,15 @@ function Document()
 				Loader.removeScript(execConfig.scripts[i].tmpFile);
 		}
 
-		var plugins = window.electronAPI.refreshPlugIns();
+		var plugins = viewManager.getPlugins();
 
 		for (var i = 0; i < plugins.length; i++)
-		{
 			Loader.removeScript(plugins[i]);
+
+		plugins = window.electronAPI.refreshPlugIns();
+
+		for (var i = 0; i < plugins.length; i++)
 			Loader.addScript(plugins[i], plugins[i]);
-		}
 
 		var tmpCode = $this.getCode();
 
