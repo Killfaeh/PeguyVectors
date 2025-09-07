@@ -1,0 +1,15 @@
+Doc.height = 500;
+var night = true;
+var fullnight = false;
+var startSize = 40;
+var endSize = 80;
+var sizeVariation = 5;
+var positionXVariation = 5;
+var positionYVariation = 5;
+var nbRows = 3;
+var yOffset = 170;
+var imgWidth = 500;
+var imgHeight = 250;
+var interX = 25;
+var interline = 40;
+var mountain = 5;
