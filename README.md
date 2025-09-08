@@ -94,7 +94,7 @@ To open an existing project, you have to open the <i>project.json</i> file of th
 To add a script in your project, you have to click on the add file icon on the left top, near the double arrow.<br/>
 
 <div align="center">
-<img src="https://github.com/Killfaeh/PeguyVectors/blob/main/doc/01-general.png?raw=true">
+<img src="https://github.com/Killfaeh/PeguyVectors/blob/main/doc/04-add-script.png?raw=true">
 </div><br/>
 
 Then, enter a name and click on the Ok button.<br/>
