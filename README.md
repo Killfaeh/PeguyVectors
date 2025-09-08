@@ -4,7 +4,7 @@ Péguy Vectors is a vector procedural generation software based on [Electron](ht
 Here is an example of what you can do with Péguy Vectors.</br>
 
 <div align="center">
-<img src="./demos/screenshot.png">
+<img src="https://github.com/Killfaeh/PeguyVectors/blob/main/doc/01-general.png?raw=true">
 </div></br>
 
 ## Table of Contents
@@ -84,14 +84,22 @@ Run PeguyVectors in a console.
 Here is how look the interface.</br>
 
 <div align="center">
-<img src="./doc/01-general.png">
-</div></br>
+<img src="https://github.com/Killfaeh/PeguyVectors/blob/main/doc/01-general.png?raw=true">
+</div><br/>
 
-A Péguy Vectors project is a simple javascript file. </br>
-To test your program, you just need to click on the left top double arrow.</br>
-You can export the result in SVG or PNG format file.</br>
-The quick code panel at right help you to write your code faster. 
-Double click on the label or simple click on the copy/paste icon of the row which interests you and a code block will be pasted in your code.
+A Péguy Vectors project is a directory containing a file named <i>project.json</i> and a file named <i>main.js</i>. If you add new scripts to the project, they will be saved in this directory.<br/>
+
+To open an existing project, you have to open the <i>project.json</i> file of the project. To test your program, you just need to click on the left top double arrow. You can export the result in a Wavefront (.obj) or Collada (.dae) file. The quick code panel at right help you to write your code faster. Double click on the label or simple click on the copy/paste icon of the row which interests you and a code block will be pasted in your code.<br/>
+
+To add a script in your project, you have to click on the add file icon on the left top, near the double arrow.<br/>
+
+<div align="center">
+<img src="https://github.com/Killfaeh/PeguyVectors/blob/main/doc/01-general.png?raw=true">
+</div><br/>
+
+Then, enter a name and click on the Ok button.<br/>
+
+Since scripts other than main.js may be executed in random order, it is recommended that you do not execute any functions in them and only write variable and function declarations. The execution of functions must be done in <i>main.js</i>, which runs after all other scripts.
 
 ### Insert assets
 
